@@ -44,7 +44,7 @@ function WorldInteraction:OnCollectible()
                 if self.Collectibles["Marked"][tag.TagName:ToString()] then
                     self.Collectibles["Marked"][tag.TagName:ToString()] = false
                     local endOfTag = tag.TagName:ToString():match("^Object.Property.Mark.(.+)$")
-                    self.Reward:Award("WorldCollectiblesMarked" .. endOfTag)
+                    self.Reward:Check("WorldCollectiblesMarked" .. endOfTag)
                 end
             end)
         end)
@@ -57,13 +57,13 @@ function WorldInteraction:OnCollectible()
                 if self.Collectibles["Bill"][tag.TagName:ToString()] then
                     self.Collectibles["Bill"][tag.TagName:ToString()] = false
                     local endOfTag = tag.TagName:ToString():match("^Object.Property.Denomination.(.+)$")
-                    self.Reward:Award("WorldCollectiblesBill" .. endOfTag)
+                    self.Reward:Check("WorldCollectiblesBill" .. endOfTag)
                 end
 
                 if self.Collectibles["Coin"][tag.TagName:ToString()] then
                     self.Collectibles["Coin"][tag.TagName:ToString()] = false 
                     local endOfTag = tag.TagName:ToString():match("^Object.Property.Denomination.Misc.(.+)$")
-                    self.Reward:Award("WorldCollectiblesCoin" .. endOfTag)
+                    self.Reward:Check("WorldCollectiblesCoin" .. endOfTag)
                 end
             end)
         end)
@@ -91,14 +91,14 @@ function WorldInteraction:OnUnlockWAll()
             if Tag:get().TagName:ToString() == "World.Area.Relax" then
                 if self.Interactions["RelaxArea"] then
                     self.Interactions["RelaxArea"] = false 
-                    self.Reward:Award("WorldInteractionsRelaxArea")
+                    self.Reward:Check("WorldInteractionsRelaxArea")
                 end
             end
 
             if Tag:get().TagName:ToString() == "World.Area.Upper" then
                 if self.Interactions["UpperArea"] then
                     self.Interactions["UpperArea"] = false 
-                    self.Reward:Award("WorldInteractionsUpperArea")
+                    self.Reward:Check("WorldInteractionsUpperArea")
                 end
             end
         end)
@@ -116,7 +116,7 @@ function WorldInteraction:OnDunk()
             if score:get() == 200 then
                 if self.Interactions["Dunked"] then
                     self.Interactions["Dunked"] = false 
-                    self.Reward:Award("WorldInteractionsDunked")
+                    self.Reward:Check("WorldInteractionsDunked")
                 end
             end
         end)
@@ -134,7 +134,7 @@ function WorldInteraction:OnOutOfBound()
             if tag:get().TagName:ToString() == "World.Event.Ending.GotOut" then
                 if self.Interactions["OutOfBound"] then
                     self.Interactions["OutOfBound"] = false 
-                    self.Reward:Award("WorldInteractionsOutOfBound")
+                    self.Reward:Check("WorldInteractionsOutOfBound")
                 end
             end
         end)
@@ -159,7 +159,7 @@ function WorldInteraction:OnMakeItRain()
                 if Utils.compareGuids(MarketDB["BP_MoneyGun_C"].Guid, product.ProductId) then
                     if self.Interactions["MoneyGun"] then
                         self.Interactions["MoneyGun"] = false 
-                        self.Reward:Award("WorldInteractionsMoneyGun")
+                        self.Reward:Check("WorldInteractionsMoneyGun")
                     end
                 end
 

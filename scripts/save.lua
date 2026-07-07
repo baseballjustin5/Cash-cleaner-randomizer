@@ -10,6 +10,11 @@ function Save:Init(ctx)
     self.MarketLogic = ctx.MarketLogic
     self.WorldInteraction = ctx.WorldInteraction
     self.Reward = ctx.Reward
+    self.Archipelago = ctx.Archipelago
+    
+    Utils.OnQuit(function()
+        self:OnChange()
+    end)
 end
 
 function Save:WriteSave(data)
@@ -51,6 +56,9 @@ function Save:Default()
         },
         Reward = {
             ExpectedReputation = self.Reward.ExpectedReputation
+        },
+        Archipelago = {
+            CheckedLocation = self.Archipelago.CheckedLocation
         }
     }
 end
@@ -95,6 +103,10 @@ function Save:LoadSave()
     if LoadedData.Reward then
         self.Reward:SetExpectedReputation(LoadedData.Reward.ExpectedReputation)
     end
+
+    if LoadedData.Archipelago then
+        self.Archipelago:SetCheckedLocation(LoadedData.Archipelago.CheckedLocation)
+    end
 end
 
 
@@ -123,6 +135,9 @@ function Save:OnChange()
         },
         Reward = {
             ExpectedReputation = self.Reward.ExpectedReputation
+        },
+        Archipelago = {
+            CheckedLocation = self.Archipelago.CheckedLocation
         }
     }
 

@@ -56,9 +56,9 @@ function StackSize:changeInOutSettings(upgradeLevel)
     ExecuteInGameThread(function()
         -- Loop to force load everything
         self.MarketLogic:LoopProducts(function(product)
-            print('loading product', product)
+            print('[Randomizer] Loading all market product', product)
         end)
-        ExecuteWithDelay(250, function()
+        Utils.DelayedCall(function()
             ExecuteInGameThread(function()
 
                 local config =  {
@@ -183,7 +183,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
                     end
                 end
             end)
-        end)
+        end, 250)
     end)
     Utils.OnQuit(function()
         for _, bp in pairs(counterBlueprints) do

@@ -1,6 +1,4 @@
 local Utils = require "utils"
-local RewardList = require "rewardList"
-local RewardLocation = require "rewardLocations"
 
 local Reward = {}
 
@@ -11,61 +9,8 @@ function Reward:Init(ctx)
     self.Save = ctx.Save
     self.QuestLogic = ctx.QuestLogic
     self.StackSize = ctx.StackSize
-    self.MarketLogic = ctx.MarketLogic 
-    self:Read()
-end
-
-function Reward:Write(data)
-    local f, err = io.open(self.SAVE_PATH, "w")
-    if not f then
-        return false
-    end
-
-    f:write("return ")
-    f:write(Utils.Serialize(data))
-    f:close()
-
-    return true
-end
-
-function Reward:Read()
-    local ok, data = pcall(dofile, self.SAVE_PATH)
-    if ok and type(data) == "table" then
-        self.rewardMap = data
-        return data
-    end
-
-    local generated = self:Generate()
-    self:Write(generated)
-    self.rewardMap = generated
-    return generated
-end
-
-local function toArray(t)
-    local arr = {}
-    for _, v in pairs(t) do
-        table.insert(arr, v)
-    end
-    return arr
-end
-
-function Reward:Generate()
-    print("[Randomizer] Generating spoiler map")
-
-    local rewards = toArray(RewardList)
-    local locations = toArray(RewardLocation)
-
-    math.randomseed(os.time())
-    for i = #rewards, 2, -1 do
-        local j = math.random(i)
-        rewards[i], rewards[j] = rewards[j], rewards[i]
-    end
-
-    local generated = {}
-    for i = 1, #locations do
-        generated[locations[i]] = rewards[i]
-    end
-    return generated
+    self.MarketLogic = ctx.MarketLogic
+    self.Archipelago = ctx.Archipelago
 end
 
 function Reward:GiveMoney()
@@ -101,7 +46,13 @@ function Reward:GiveReputation()
     end)
 end
 
-function Reward:GetLocationText(location)
+function Reward:GetLocationText(location, player)
+    if location == nil then
+        if player ~= nil then
+            return player
+        end
+        return "Archipelago"
+    end
     if location:find("^Main") then
         local name = location:match("^MainQuest_(.+)$")
         return "Completing main quest " .. name
@@ -142,6 +93,10 @@ function Reward:GetLocationText(location)
     elseif location:find("^WorldCollectiblesBillUSD.") then
         local coin = location:match("^WorldCollectiblesBillUSD.(%d+)$")
         return "Collecting " .. coin .. "Dollar rare bill"
+    elseif player ~= nil then
+        return player
+    else
+        return "Archipelago"
     end
 end
 
@@ -214,24 +169,40 @@ function Reward:GetRewardText(reward)
         elseif reward == "Market_BP_PickupSensor_CoinCounter_C" then
             return "less reputation required for Coin Counter"
         end
+    else
+        return reward
     end     
 end
 
-function Reward:Award(location)
-    local reward = self.rewardMap[location]
-    local message = "[Randomizer] " .. self:GetLocationText(location) .. " gave you this reward : "
-    Utils.Notify(message .. self:GetRewardText(reward))
-    if reward:find("^Quest") then
-        self.QuestLogic:HandleReward(reward)
-    elseif reward == "StackSizeUpgrade" then
-        self.StackSize:HandleReward()
-    elseif reward == "ReputationGain" then
-        self:GiveReputation()
-    elseif reward == "MoneyGain" then
-        self:GiveMoney()
-    elseif reward:find("^Market") then
-        self.MarketLogic:HandleReward(reward)
-    end     
+function Reward:Check(location)
+    Utils.ThrottledCall(function()
+        self.Archipelago:SendLocationFromName(location)
+    end)
+end
+
+function Reward:Goal()
+    Utils.ThrottledCall(function()
+        self.Archipelago:Goal()
+    end)
+end
+
+function Reward:Award(item, location, player)
+    Utils.ThrottledCall(function()
+        local message = "[Randomizer] " .. self:GetLocationText(location, player) .. " gave you this reward : "
+        Utils.Notify(message .. self:GetRewardText(item))
+
+        if item:find("^Quest") then
+            self.QuestLogic:HandleReward(item)
+        elseif item == "StackSizeUpgrade" then
+            self.StackSize:HandleReward()
+        elseif item == "ReputationGain" then
+            self:GiveReputation()
+        elseif item == "MoneyGain" then
+            self:GiveMoney()
+        elseif item:find("^Market") then
+            self.MarketLogic:HandleReward(item)
+        end
+    end)
 end
 
 return Reward

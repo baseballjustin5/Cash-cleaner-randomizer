@@ -69,18 +69,18 @@ QuestLogic.CurrentUpgrades = CurrentUpgrades
 
 -- total 16 locations
 local AvailableQuestBonuses = {
-    ["Exact money value"] = { All = true },
-    ["More money value"] =  { All = true }, 
-    ["Much more money value"] =  { All = true }, 
-    ["Single delivery"] =  { All = true }, 
-    ["Nothing else"] =  { All = true },
-    ["No marked money"] =  { All = true, ["no-mark"] = true },
-    ["No fake money"] = { All = true, ["no-fake"] = true },
-    ["Perfect packs"] = { All = true, ["packs"] = true },
-    ["Perfect blocks"] = { All = true, ["blocks"] = true },
-    ["Marked with Labels!"] = { All = true },
-    ["Perfect rolls"] = { All = true },
-    ["Perfect roll-blocks"] = { All = true },
+    ["BP_QuestBonus_ExactMoneyValue_C"] = { All = true },
+    ["BP_QuestBonus_MoreMoneyValue_C"] =  { All = true }, 
+    ["BP_QuestBonus_MuchMoreMoneyValue_C"] =  { All = true }, 
+    ["BP_QuestBonus_OneShot_C"] =  { All = true }, 
+    ["BP_QuestBonus_OnlyRequested_C"] =  { All = true },
+    ["BP_QuestBonus_NoMarkedMoney_C"] =  { All = true, ["no-mark"] = true },
+    ["BP_QuestBonus_NoFakeMoney_C"] = { All = true, ["no-fake"] = true },
+    ["BP_QuestBonus_PerfectPacks_C"] = { All = true, ["packs"] = true },
+    ["BP_QuestBonus_PerfectBlocks_C"] = { All = true, ["blocks"] = true },
+    ["BP_QuestBonus_Stickers_C"] = { All = true },
+    ["BP_QuestBonus_PerfectRolls_C"] = { All = true },
+    ["BP_QuestBonus_PerfectRollBlocks_C"] = { All = true },
 }
 QuestLogic.AvailableQuestBonuses = AvailableQuestBonuses
 
@@ -238,12 +238,7 @@ end
 
 function QuestLogic:LogQuestStarted()
     local pre,post = RegisterHook(hookQuestSubsystem .. ":OnQuestStarted", function(_self, questRef)
-        print("[MarketMod] quest subsystem OnQuestStarted hook triggered")
-        print("quest type", type(questRef))
         local quest = questRef:get()
-        print("[MarketMod] Quest started hook triggered", type(quest))
-        print(string.format("[MarketMod] Quest started: %s", Utils.GuidToString(quest.QuestId)))
-        print("Quest difficulty", quest.Info.Difficulty)
     end)
     Utils.OnQuit(function()
         local functionName = hookQuestSubsystem .. ":OnQuestStarted"
@@ -469,33 +464,65 @@ function QuestLogic:ForceOpenTube()
 end
 
 function QuestLogic:AwardBonus(Bonus, ValidationRules)
-    if self.AvailableQuestBonuses[Bonus].All then
-        self.AvailableQuestBonuses[Bonus].All = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus)
+    if Bonus ~= nil and Bonus:IsValid() then
+        local classText 
+        local fullName = Bonus:GetClass():GetFullName()
+        
+        if fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_ExactMoneyValue.BP_QuestBonus_ExactMoneyValue_C" then
+            classText = "BP_QuestBonus_ExactMoneyValue_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_MoreMoneyValue.BP_QuestBonus_MoreMoneyValue_C" then
+            classText = "BP_QuestBonus_MoreMoneyValue_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_MuchMoreMoneyValue.BP_QuestBonus_MuchMoreMoneyValue_C" then
+            classText = "BP_QuestBonus_MuchMoreMoneyValue_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_OneShot.BP_QuestBonus_OneShot_C" then
+            classText = "BP_QuestBonus_OneShot_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_OnlyRequested.BP_QuestBonus_OnlyRequested_C" then
+            classText = "BP_QuestBonus_OnlyRequested_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_NoMarkedMoney.BP_QuestBonus_NoMarkedMoney_C" then
+            classText = "BP_QuestBonus_NoMarkedMoney_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_NoFakeMoney.BP_QuestBonus_NoFakeMoney_C" then
+            classText = "BP_QuestBonus_NoFakeMoney_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_PerfectPacks.BP_QuestBonus_PerfectPacks_C" then
+            classText = "BP_QuestBonus_PerfectPacks_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_PerfectBlocks.BP_QuestBonus_PerfectBlocks_C" then
+            classText = "BP_QuestBonus_PerfectBlocks_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_Stickers.BP_QuestBonus_Stickers_C" then
+            classText = "BP_QuestBonus_Stickers_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_PerfectRolls.BP_QuestBonus_PerfectRolls_C" then
+            classText = "BP_QuestBonus_PerfectRolls_C"
+        elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_PerfectRollBlocks.BP_QuestBonus_PerfectRollBlocks_C" then
+            classText = "BP_QuestBonus_PerfectRollBlocks_C"
+        end
+
+        if self.AvailableQuestBonuses[classText].All then
+            self.AvailableQuestBonuses[classText].All = false
+            self.Reward:Check("Quest_Bonus_" .. classText)
+        end
+
+        if classText == "BP_QuestBonus_NoMarkedMoney_C" and ValidationRules["no-mark"] and self.AvailableQuestBonuses[classText]["no-mark"] then
+            self.AvailableQuestBonuses[classText]["no-mark"] = false
+            self.Reward:Check("Quest_Bonus_" .. classText .. "_with_quest")
+
+        end
+
+        if classText == "BP_QuestBonus_NoFakeMoney_C" and ValidationRules["no-fake"] and self.AvailableQuestBonuses[classText]["no-fake"] then
+            self.AvailableQuestBonuses[classText]["no-fake"] = false
+            self.Reward:Check("Quest_Bonus_" .. classText .. "_with_quest")
+
+        end
+
+        if classText == "BP_QuestBonus_PerfectPacks_C" and ValidationRules["packs"] and self.AvailableQuestBonuses[classText]["packs"] then
+            self.AvailableQuestBonuses[classText]["packs"] = false
+            self.Reward:Check("Quest_Bonus_" .. classText .. "_with_quest")
+
+        end
+
+        if classText == "BP_QuestBonus_PerfectBlocks_C" and ValidationRules["blocks"] and self.AvailableQuestBonuses[classText]["blocks"] then
+            self.AvailableQuestBonuses[classText]["blocks"] = false
+            self.Reward:Check("Quest_Bonus_" .. classText .. "_with_quest")
+        end
     end
-
-    if Bonus == "No marked money" and ValidationRules["no-mark"] and self.AvailableQuestBonuses[Bonus]["no-mark"] then
-        self.AvailableQuestBonuses[Bonus]["no-mark"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
-
-    end
-
-    if Bonus == "No fake money" and ValidationRules["no-fake"] and self.AvailableQuestBonuses[Bonus]["no-fake"] then
-        self.AvailableQuestBonuses[Bonus]["no-fake"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
-
-    end
-
-    if Bonus == "Perfect packs" and ValidationRules["packs"] and self.AvailableQuestBonuses[Bonus]["packs"] then
-        self.AvailableQuestBonuses[Bonus]["packs"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
-
-    end
-
-    if Bonus == "Perfect blocks" and ValidationRules["blocks"] and self.AvailableQuestBonuses[Bonus]["blocks"] then
-        self.AvailableQuestBonuses[Bonus]["blocks"] = false
-        self.Reward:Award("Quest_Bonus_" .. Bonus .. "_with_quest")
-    end
+    
 end
 
 function QuestLogic:OnQuestFinish()
@@ -530,7 +557,11 @@ function QuestLogic:OnQuestFinish()
             local mainQuestName = self:GetMainQuestName(questInstance)
             if not self.CompletedMainQuestsNames[mainQuestName] then
                 self.CompletedMainQuestsNames[mainQuestName] = true
-                self.Reward:Award("MainQuest_" .. mainQuestName)
+                self.Reward:Check("MainQuest_" .. mainQuestName)
+
+                if mainQuestName == "Main.FinalAscent" or mainQuestName == "Main.PointOfNoReturn" then
+                    self.Reward:Goal()
+                end
             end
         end
 
@@ -538,7 +569,7 @@ function QuestLogic:OnQuestFinish()
             if not self.CompletedSideQuestsIds[Utils.GuidToString(questInstance.QuestId)] then
                 self.CompletedSideQuestsIds[Utils.GuidToString(questInstance.QuestId)] = true
                 if self.CompletedSideQuests < self.MaxCompletedSideQuests then
-                    self.Reward:Award("SideQuest_" .. self.CompletedSideQuests)
+                    self.Reward:Check("SideQuest_" .. self.CompletedSideQuests)
                 end
                 self:SetCompletedSideQuest(self.CompletedSideQuests + 1)
             end
@@ -547,7 +578,7 @@ function QuestLogic:OnQuestFinish()
             if difficulty > self.MaxDifficulty then
                 while self.MaxDifficulty < difficulty do
                     self.MaxDifficulty = self.MaxDifficulty + 1
-                    self.Reward:Award("Difficulty_" .. self.MaxDifficulty)
+                    self.Reward:Check("Difficulty_" .. self.MaxDifficulty)
                 end
             end
 
@@ -582,7 +613,7 @@ function QuestLogic:OnQuestFinish()
             for i = 1, #Bonuses do
                 local bonus = Bonuses[i]
                 if bonus:IsCompleted() then 
-                    self:AwardBonus(bonus.Description:ToString(), ValidationRules)
+                    self:AwardBonus(bonus, ValidationRules)
                 end
                 i = i + 1
             end

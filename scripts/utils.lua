@@ -1,4 +1,5 @@
 local Utils = {}
+local UEHelpers = require("UEHelpers")
 
 function Utils.GuidToString(guid)
     if guid == nil then
@@ -48,9 +49,11 @@ function Utils.Serialize(value, indent)
 end
 
 function Utils.Notify(RichText)
-    local smartPhone = FindFirstOf("BP_SmartphoneSubsystem_C")
-    pcall(function()
-        return smartPhone:PushNotification(FText(RichText), nil, nil, true)
+    ExecuteInGameThread(function()
+        local smartPhone = FindFirstOf("BP_SmartphoneSubsystem_C")
+        pcall(function()
+            return smartPhone:PushNotification(FText(RichText), nil, nil, true)
+        end)
     end)
 end
 
@@ -72,4 +75,58 @@ function Utils.OnWakeUp(Callback)
     end)
 end
 
+local world
+local gameplayStatics
+local function IsGamePaused()
+    if (world == nil or not world:IsValid()) then
+        world = UEHelpers.GetWorldContextObject()
+        if (world == nil or not world:IsValid()) then
+            return true
+        end
+    end
+
+    if (gameplayStatics == nil or not gameplayStatics:IsValid()) then
+        gameplayStatics = UEHelpers.GetGameplayStatics(false)
+        if (gameplayStatics == nil or not gameplayStatics:IsValid()) then
+            return true
+        end
+    end
+
+    local isPaused = gameplayStatics:IsGamePaused(world)
+    return isPaused
+end
+
+local PendingCallbacks = {}
+local MIN_DELAY = 500
+local lastCall = 0
+
+function Utils.InitTickCallback()
+    RegisterHook("/Game/Core/UI/VirtualCursor/W_VirtualCursor.W_VirtualCursor_C:Tick", function(_, deltaSeconds)
+        if not IsGamePaused() then
+            local now = os.clock() * 1000
+            for i = #PendingCallbacks, 1, -1 do
+                local entry = PendingCallbacks[i]
+                if now >= entry.executeAt then 
+                    entry.callback()
+                    table.remove(PendingCallbacks, i)
+                end
+            end
+        end
+    end)
+end
+
+function Utils.ThrottledCall(callback)
+    Utils.DelayedCall(callback, 0)
+end
+
+function Utils.DelayedCall(callback, delay)
+    local now = os.clock() * 1000
+    local wait = math.max(delay, MIN_DELAY - (now - lastCall))
+    lastCall = now + wait
+
+    table.insert(PendingCallbacks, {
+        executeAt = now + wait,
+        callback = callback
+    })   
+end
 return Utils

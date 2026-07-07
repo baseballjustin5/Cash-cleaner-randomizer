@@ -51,24 +51,25 @@ local UpgradeTargets = {
     ["BP_StickerGun_C"] = { ["BP_StickerGun_C"] = true},
     ["BP_PickupSensor_CoinCounter_C"] = { ["BP_PickupSensor_CoinCounter_C"] = true},
 }
+
 local BaseUpgradeLevels = {
-    [0] = 18,
-    [1] = 12,
-    [2] = 6,
-    [3] = 1
+    [0] = 32,
+    [1] = 24,
+    [2] = 16,
+    [3] = 8
 }
 
 local HighUpgradeLevels = {
-    [0] = 22,
-    [1] = 16,
-    [2] = 10,
-    [3] = 4
+    [0] = 40,
+    [1] = 32,
+    [2] = 24,
+    [3] = 16
 }
 
 local LowUpgradeLevels = {
-    [0] = 9,
-    [1] = 6,
-    [2] = 3,
+    [0] = 24,
+    [1] = 16,
+    [2] = 8,
     [3] = 1
 }
 
@@ -174,7 +175,7 @@ function MarketLogic:SpyMarketOrder()
 end
 
 function MarketLogic:SetMarketPriceFree()
-    self:LoopProducts(function(product)
+    self:LoopProducts(function(product) 
         product.Price = 0  
     end)
 end
