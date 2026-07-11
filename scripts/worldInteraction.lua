@@ -2,7 +2,7 @@ local Utils = require "utils"
 local MarketDB = require "marketDB"
 local WorldInteraction = {}
 
-local Collectibles = {
+Collectibles = {
     ["Marked"] = {
         ["Object.Property.Mark.FBI"] = true,
         ["Object.Property.Mark.Police"] = true,
@@ -39,7 +39,7 @@ WorldInteraction.Collectibles = Collectibles
 -- 24 location
 function WorldInteraction:OnCollectible()
     ExecuteInGameThread(function()
-        local pre, post = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterMarkCollectibles", function(_self, Collectibles)
+        local pre, post = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterMarkCollectibles", function(_self, Container)
             Utils.LoopGameplayTagContainer(Collectibles:get(), function(tag, index)
                 if self.Collectibles["Marked"][tag.TagName:ToString()] then
                     self.Collectibles["Marked"][tag.TagName:ToString()] = false
@@ -51,8 +51,8 @@ function WorldInteraction:OnCollectible()
         Utils.OnQuit(function()
             local functionName = "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterMarkCollectibles"
             UnregisterHook(functionName, pre, post)
-        end) 
-        local pre2, post2 = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollectibles", function(_self, Collectibles)
+        end)
+        local pre2, post2 = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollectibles", function(_self, Container)
             Utils.LoopGameplayTagContainer(Collectibles:get(), function(tag, index)
                 if self.Collectibles["Bill"][tag.TagName:ToString()] then
                     self.Collectibles["Bill"][tag.TagName:ToString()] = false
@@ -61,7 +61,7 @@ function WorldInteraction:OnCollectible()
                 end
 
                 if self.Collectibles["Coin"][tag.TagName:ToString()] then
-                    self.Collectibles["Coin"][tag.TagName:ToString()] = false 
+                    self.Collectibles["Coin"][tag.TagName:ToString()] = false
                     local endOfTag = tag.TagName:ToString():match("^Object.Property.Denomination.Misc.(.+)$")
                     self.Reward:Check("WorldCollectiblesCoin" .. endOfTag)
                 end
@@ -70,7 +70,7 @@ function WorldInteraction:OnCollectible()
         Utils.OnQuit(function()
             local functionName = "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollectibles"
             UnregisterHook(functionName, pre2, post2)
-        end) 
+        end)
     end)
 end
 
@@ -88,95 +88,90 @@ function WorldInteraction:OnUnlockWAll()
     ExecuteInGameThread(function()
         local pre, post = RegisterHook("/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C:OnWorldEventRegistered", function(_self, Tag)
 
-            if Tag:get().TagName:ToString() == "World.Area.Relax" then
-                if self.Interactions["RelaxArea"] then
-                    self.Interactions["RelaxArea"] = false 
+            if Tag:get().TagName:ToString() == "World.Area.Relax" and self.Interactions["RelaxArea"] then
+                    self.Interactions["RelaxArea"] = false
                     self.Reward:Check("WorldInteractionsRelaxArea")
-                end
             end
 
-            if Tag:get().TagName:ToString() == "World.Area.Upper" then
-                if self.Interactions["UpperArea"] then
-                    self.Interactions["UpperArea"] = false 
+            if Tag:get().TagName:ToString() == "World.Area.Upper" and self.Interactions["UpperArea"] then
+                    self.Interactions["UpperArea"] = false
                     self.Reward:Check("WorldInteractionsUpperArea")
-                end
             end
         end)
         Utils.OnQuit(function()
             local functionName = "/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C:OnWorldEventRegistered"
             UnregisterHook(functionName, pre, post)
-        end) 
+        end)
     end)
-   
+
 end
 
 function WorldInteraction:OnDunk()
     ExecuteInGameThread(function()
         local pre, post = RegisterHook("/Game/Core/System/Achievements/BP_AchievementHandler_SlamDunkKingpin.BP_AchievementHandler_SlamDunkKingpin_C:OnScored", function(_self, score)
-            if score:get() == 200 then
-                if self.Interactions["Dunked"] then
-                    self.Interactions["Dunked"] = false 
-                    self.Reward:Check("WorldInteractionsDunked")
-                end
+            if score:get() == 200 and self.Interactions["Dunked"] then
+                self.Interactions["Dunked"] = false
+                self.Reward:Check("WorldInteractionsDunked")
             end
         end)
         Utils.OnQuit(function()
             local functionName = "/Game/Core/System/Achievements/BP_AchievementHandler_SlamDunkKingpin.BP_AchievementHandler_SlamDunkKingpin_C:OnScored"
             UnregisterHook(functionName, pre, post)
-        end) 
+        end)
     end)
-    
+
 end
 
 function WorldInteraction:OnOutOfBound()
     ExecuteInGameThread(function()
         local pre, post = RegisterHook("/Game/Core/System/Achievements/BP_AchievementHandler_OutOfBounds.BP_AchievementHandler_OutOfBounds_C:OnWorldEventRegistered", function(_self, tag)
-            if tag:get().TagName:ToString() == "World.Event.Ending.GotOut" then
-                if self.Interactions["OutOfBound"] then
-                    self.Interactions["OutOfBound"] = false 
-                    self.Reward:Check("WorldInteractionsOutOfBound")
-                end
+            if tag:get().TagName:ToString() == "World.Event.Ending.GotOut" and self.Interactions["OutOfBound"] then
+                self.Interactions["OutOfBound"] = false
+                self.Reward:Check("WorldInteractionsOutOfBound")
             end
         end)
 
         Utils.OnQuit(function()
             local functionName = "/Game/Core/System/Achievements/BP_AchievementHandler_OutOfBounds.BP_AchievementHandler_OutOfBounds_C:OnWorldEventRegistered"
             UnregisterHook(functionName, pre, post)
-        end) 
+        end)
     end)
 end
 
 function WorldInteraction:OnMakeItRain()
     ExecuteInGameThread(function()
         local pre, post = RegisterHook("/Game/Core/System/Achievements/BP_AchievementHandler_Rainmaker.BP_AchievementHandler_Rainmaker_C:OnOrderDeliveryReady", function(_self, order)
-            
+
             local orderI = order:get()
+
+            if not orderI or not orderI.Products then
+                return
+            end
+
             for i = 1, #orderI.Products do
                 local product = orderI.Products[i]
                 if product == nil then
                     break
                 end
-                if Utils.compareGuids(MarketDB["BP_MoneyGun_C"].Guid, product.ProductId) then
-                    if self.Interactions["MoneyGun"] then
-                        self.Interactions["MoneyGun"] = false 
-                        self.Reward:Check("WorldInteractionsMoneyGun")
-                    end
-                end
 
-                i = i + 1
+                local moneyGunData = MarketDB["BP_MoneyGun_C"]
+                if moneyGunData and Utils.compareGuids(MarketDB["BP_MoneyGun_C"].Guid, product.ProductId) and self.Interactions["MoneyGun"] then
+                        self.Interactions["MoneyGun"] = false
+                        self.Reward:Check("WorldInteractionsMoneyGun")
+                end
             end
         end)
         Utils.OnQuit(function()
             local functionName = "/Game/Core/System/Achievements/BP_AchievementHandler_Rainmaker.BP_AchievementHandler_Rainmaker_C:OnOrderDeliveryReady"
             UnregisterHook(functionName, pre, post)
-        end) 
+        end)
     end)
 end
 
 function WorldInteraction:AlterInitConsumables()
     local tapes = FindAllOf("BP_MoneyTape_C")
     if tapes ~= nil and #tapes > 0 then
-        for i=1, #tapes do
+        for i = 1, #tapes do
             local tape = tapes[i]
             tape.ConsumableObject.MaxUses = 250
             tape.ConsumableObject.StartingUses = 250
@@ -186,13 +181,13 @@ function WorldInteraction:AlterInitConsumables()
 
     local wraps = FindAllOf("BP_ClingWrap_C")
     if wraps ~= nil and #wraps > 0 then
-        for i=1, #wraps do
+        for i = 1, #wraps do
             local wrap = wraps[i]
             wrap.ConsumableObject.MaxUses = 250
             wrap.ConsumableObject.StartingUses = 250
             wrap.ConsumableObject:SetUsesLeft(250, true)
         end
-    end 
+    end
 end
 function WorldInteraction:LoadCollectibles(_Collectibles)
     self.Collectibles = _Collectibles
@@ -216,4 +211,3 @@ function WorldInteraction:ListenAllEvents()
 end
 
 return WorldInteraction
- 

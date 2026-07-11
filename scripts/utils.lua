@@ -19,7 +19,6 @@ function Utils.LoopGameplayTagContainer(Container, Callback)
     for i = 1, #Container.GameplayTags do
         local tag = Container.GameplayTags[i]
         Callback(tag, i)
-        i = i + 1
     end
 end
 
@@ -106,7 +105,7 @@ function Utils.InitTickCallback()
             local now = os.clock() * 1000
             for i = #PendingCallbacks, 1, -1 do
                 local entry = PendingCallbacks[i]
-                if now >= entry.executeAt then 
+                if now >= entry.executeAt then
                     entry.callback()
                     table.remove(PendingCallbacks, i)
                 end
@@ -127,6 +126,6 @@ function Utils.DelayedCall(callback, delay)
     table.insert(PendingCallbacks, {
         executeAt = now + wait,
         callback = callback
-    })   
+    })
 end
 return Utils
