@@ -19,7 +19,6 @@ function Utils.LoopGameplayTagContainer(Container, Callback)
     for i = 1, #Container.GameplayTags do
         local tag = Container.GameplayTags[i]
         Callback(tag, i)
-        i = i + 1
     end
 end
 
