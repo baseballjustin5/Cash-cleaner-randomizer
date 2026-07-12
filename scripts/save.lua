@@ -11,7 +11,7 @@ function Save:Init(ctx)
     self.WorldInteraction = ctx.WorldInteraction
     self.Reward = ctx.Reward
     self.Archipelago = ctx.Archipelago
-    
+
     Utils.OnQuit(function()
         self:OnChange()
     end)
@@ -20,6 +20,7 @@ end
 function Save:WriteSave(data)
     local f, err = io.open(self.SAVE_PATH, "w")
     if not f then
+        print(err)
         return false
     end
 

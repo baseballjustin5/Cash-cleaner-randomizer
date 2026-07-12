@@ -23,11 +23,11 @@ local MarkedMoneyPercentUpgrades = {
 }
 
 local RequiredMoneyFactorUpgrades = {
-    [0] = { Min = 5, Max = 10}, 
-    [1] = { Min = 2, Max = 5}, 
-    [2] = { Min = 1, Max = 1}, 
-    [3] = { Min = 0.5, Max = 0.75}, 
-    [4] = { Min = 0.25, Max = 0.5}, 
+    [0] = { Min = 5, Max = 10},
+    [1] = { Min = 2, Max = 5},
+    [2] = { Min = 1, Max = 1},
+    [3] = { Min = 0.5, Max = 0.75},
+    [4] = { Min = 0.25, Max = 0.5},
 }
 
 local FillerPercentUpgrades = {
@@ -37,21 +37,21 @@ local FillerPercentUpgrades = {
 }
 
 local MixPercentUpgrades = {
-    [0] = { Min = 0, Max = 10, Probability = 100 }, 
-    [1] = { Min = 20, Max = 50, Probability = 50}, 
-    [2] = { Min = 50, Max = 100, Probability = 20}, 
+    [0] = { Min = 0, Max = 10, Probability = 100 },
+    [1] = { Min = 20, Max = 50, Probability = 50},
+    [2] = { Min = 50, Max = 100, Probability = 20},
 }
 
 local AdditionalMoneyPercentUpgrades = {
-    [0] = { Min = 5, Max = 10 }, 
-    [1] = { Min = 20, Max = 50 }, 
-    [2] = { Min = 50, Max = 100 }, 
+    [0] = { Min = 5, Max = 10 },
+    [1] = { Min = 20, Max = 50 },
+    [2] = { Min = 50, Max = 100 },
 }
 
 local RareMoneyPercentUpgrades = {
-    [0] = { Money = 5, Coin = 5 }, 
-    [1] = { Money = 10, Coin = 10 },  
-    [2] = { Money = 25, Coin = 25 }, 
+    [0] = { Money = 5, Coin = 5 },
+    [1] = { Money = 10, Coin = 10 },
+    [2] = { Money = 25, Coin = 25 },
 }
 
 -- total 18 upgrades
@@ -70,9 +70,9 @@ QuestLogic.CurrentUpgrades = CurrentUpgrades
 -- total 16 locations
 local AvailableQuestBonuses = {
     ["BP_QuestBonus_ExactMoneyValue_C"] = { All = true },
-    ["BP_QuestBonus_MoreMoneyValue_C"] =  { All = true }, 
-    ["BP_QuestBonus_MuchMoreMoneyValue_C"] =  { All = true }, 
-    ["BP_QuestBonus_OneShot_C"] =  { All = true }, 
+    ["BP_QuestBonus_MoreMoneyValue_C"] =  { All = true },
+    ["BP_QuestBonus_MuchMoreMoneyValue_C"] =  { All = true },
+    ["BP_QuestBonus_OneShot_C"] =  { All = true },
     ["BP_QuestBonus_OnlyRequested_C"] =  { All = true },
     ["BP_QuestBonus_NoMarkedMoney_C"] =  { All = true, ["no-mark"] = true },
     ["BP_QuestBonus_NoFakeMoney_C"] = { All = true, ["no-fake"] = true },
@@ -90,7 +90,7 @@ QuestLogic.AvailableQuestBonuses = AvailableQuestBonuses
 -- 2 high rep quest (16/24)
 -- total 52 main quests
 
--- max 30 side locations 
+-- max 30 side locations
 QuestLogic.CompletedSideQuests = 0
 
 QuestLogic.MaxCompletedSideQuests = 30
@@ -127,7 +127,7 @@ function QuestLogic:AlterQuestGenerator()
 
         local moneyRangesArray = questGenerator.MoneyRangesPerVolume
         if moneyRangesArray ~= nil then
-            for i = 1, # (moneyRangesArray), 1 do
+            for i = 1, # moneyRangesArray, 1 do
                 local moneyRange = moneyRangesArray[i]
                 moneyRange.Min = math.ceil(BaseMoneyRange[i].Min * RequiredMoneyFactorUpgrades[self.CurrentUpgrades["RequiredMoneyFactorUpgrades"]].Min)
                 moneyRange.Max = math.ceil(BaseMoneyRange[i].Max * RequiredMoneyFactorUpgrades[self.CurrentUpgrades["RequiredMoneyFactorUpgrades"]].Max)
@@ -136,8 +136,8 @@ function QuestLogic:AlterQuestGenerator()
 
         local coinsRangesArray = questGenerator.CoinsRangesPerVolume
         if coinsRangesArray ~= nil then
-            for i = 1, # (moneyRangesArray), 1 do
-                local coinsRange = coinsRangesArray[i] 
+            for i = 1, # coinsRangesArray, 1 do
+                local coinsRange = coinsRangesArray[i]
                 coinsRange.Min = math.ceil(BaseCoinRange[i].Min * RequiredMoneyFactorUpgrades[self.CurrentUpgrades["RequiredMoneyFactorUpgrades"]].Min)
                 coinsRange.Max = math.ceil(BaseCoinRange[i].Max * RequiredMoneyFactorUpgrades[self.CurrentUpgrades["RequiredMoneyFactorUpgrades"]].Max)
             end
@@ -238,7 +238,7 @@ end
 
 function QuestLogic:LogQuestStarted()
     local pre,post = RegisterHook(hookQuestSubsystem .. ":OnQuestStarted", function(_self, questRef)
-        local quest = questRef:get()
+        local _ = questRef:get()
     end)
     Utils.OnQuit(function()
         local functionName = hookQuestSubsystem .. ":OnQuestStarted"
@@ -264,34 +264,32 @@ function QuestLogic:LogQuestRegistered()
         Utils.LoopGameplayTagContainer(quest.Info.GameplayTags, function(tag, index)
              table.insert(infoTags, tag.TagName:ToString())
         end)
-        
+
         local dMoney = {}
         pcall(function()
             for i = 1, #quest.Objectives do
                 local objective = quest.Objectives[i]
-                local amount = 0
-                if objective.DesiredMoneyCurrency and objective.DesiredMoneyCurrency ~= nil then
-                    if objective.DesiredMoneyValue and objective.DesiredMoneyValue ~= nil and objective.DesiredMoneyValue ~= 0 then
-                        amount = objective.DesiredMoneyValue
-                    end
-                    if objective.DesiredMoneyValueV2 and objective.DesiredMoneyValueV2 ~= nil then
-                        amount = objective.DesiredMoneyValueV2.Value
-                    end
-                    pcall(function() 
-                        if objective.DesiredMoneyCurrency.TagName and objective.DesiredMoneyCurrency.TagName ~= nil then
-                            dMoney[objective.DesiredMoneyCurrency.TagName:ToString()] = { Amount = amount, Rules = {} }
-                            if objective.ValidationRules and objective.ValidationRules ~= nil and type(#objective.ValidationRules) == "number" then
-                                for j = 1, #objective.ValidationRules do
-                                    local rule = objective.ValidationRules[j]
-                                    dMoney[objective.DesiredMoneyCurrency.TagName:ToString()].Rules[rule:ToString()] = true
-                                    j = j + 1
-                                end
-                            end
-                        end
-                    end)
+                if not objective.DesiredMoneyCurrency or not
+                objective.DesiredMoneyValue then
+                    continue
                 end
 
-                i = i + 1
+                local amount = objective.DesiredMoneyValue or 0
+                if objective.DesiredMoneyValueV2 then
+                    amount = objective.DesiredMoneyValueV2.Value
+                end
+
+                local tagName = objective.DesiredMoneyCurrency.TagName:ToString()
+                dMoney[tagName] = { Amount = amount, Rules = {} }
+
+                if objective.DesiredMoneyCurrency.TagName and
+                    objective.ValidationRules and
+                    type(#objective.ValidationRules) == "number" then
+                    for j = 1, #objective.ValidationRules do
+                        local rule = objective.ValidationRules[j]
+                        dMoney[tagName].Rules[rule:ToString()] = true
+                    end
+                end
             end
         end)
         local questInfo = {
@@ -306,6 +304,10 @@ function QuestLogic:LogQuestRegistered()
         }
         local f, err = io.open(self.SAVE_PATH, "a")
         if not f then
+            return false
+        end
+        if err then
+            print("Error opening file: " .. err)
             return false
         end
 
@@ -329,70 +331,58 @@ function QuestLogic:AlterQuestValidationRule(Quest)
                 if rule:ToString() == "bills-usd" then
                     objective.ValidationRules[j] = FName("blocks-usd")
                 end
-                j = j + 1
             end
         end
-        i = i + 1
     end
 end
 
 function QuestLogic:InitQuestLimitations()
     local pre, post = RegisterHook("/Script/CashCleanerSim.Quest:OnRegistered", function(_self)
         local quest = _self:get()
-        
-        if quest.Info.Rewards ~= nil then 
-            if #quest.Info.Rewards > 0 then
-                for i=1, #quest.Info.Rewards do
-                    pcall(function()
-                        local reward = quest.Info.Rewards[i]
-                        if reward.Reputation ~= nil and type(reward.Reputation) == "number" then
-                            reward.Reputation = 0
-                        end
 
-                        local readableQuestName = quest.Info.Name:ToString()
-                        
-                        if self:QuestHasTag(quest, "Quest.Specific.Main.TheLightTest") or
-                           self:QuestHasTag(quest, "Quest.Specific.Side.HotDry") or
-                           self:QuestHasTag(quest, "Quest.Specific.Side.CleanCut")  then
-                            if reward.SpawnRequests ~= nil then
-                                if #reward.SpawnRequests then
-                                    local requests = reward.SpawnRequests
-                                    for j = 1, #reward.SpawnRequests do
-                                        
-                                        local req = reward.SpawnRequests[j]
-                                        local countRange = req.ObjectsCount
-                                
-                                        countRange.Min = 0
-                                        countRange.Max = 0
+        if quest.Info.Rewards ~= nil and #quest.Info.Rewards > 0 then
+            for i = 1, #quest.Info.Rewards do
+                pcall(function()
+                    local reward = quest.Info.Rewards[i]
+                    if reward.Reputation ~= nil and type(reward.Reputation) == "number" then
+                        reward.Reputation = 0
+                    end
 
-                                        j = j + 1
-                                    end
-                                end
-                            end
-                        end
-                    end)
-                    i = i + 1
-                end
+                    local _readableQuestName = quest.Info.Name:ToString()
 
-                for i=1, #quest.Info.FailurePenalty do
-                    pcall(function()
-                        local penality = quest.Info.FailurePenalty[i]
-                        if penality.Reputation ~= nil and type(penality.Reputation) == "number" then
-                            penality.Reputation = 0
-                        end
-                    end)
-                    i = i + 1
-                end
+                    local isTarget = self:QuestHasTag(quest, "Quest.Specific.Main.TheLightTest") or
+                        self:QuestHasTag(quest, "Quest.Specific.Side.HotDry") or
+                        self:QuestHasTag(quest, "Quest.Specific.Side.CleanCut")
 
-                for i=1, #quest.Info.CancelFee do
-                    pcall(function()
-                        local fee = quest.Info.CancelFee[i]
-                        if fee.Reputation ~= nil and type(fee.Reputation) == "number" then
-                            fee.Reputation = 0
+                    if not isTarget or not reward.SpawnRequests or #reward.SpawnRequests == 0 then
+                        continue
+                    end
+                        for j = 1, #reward.SpawnRequests do
+                            local SpawnRequest = reward.SpawnRequests[j]
+                            local countRange = SpawnRequest.ObjectsCount
+
+                            countRange.Min = 0
+                            countRange.Max = 0
                         end
-                    end)
-                    i = i + 1
-                end
+                end)
+            end
+
+            for i = 1, #quest.Info.FailurePenalty do
+                pcall(function()
+                    local penality = quest.Info.FailurePenalty[i]
+                    if penality.Reputation ~= nil and type(penality.Reputation) == "number" then
+                        penality.Reputation = 0
+                    end
+                end)
+            end
+
+            for i = 1, #quest.Info.CancelFee do
+                pcall(function()
+                    local fee = quest.Info.CancelFee[i]
+                    if fee.Reputation ~= nil and type(fee.Reputation) == "number" then
+                        fee.Reputation = 0
+                    end
+                end)
             end
         end
 
@@ -401,14 +391,14 @@ function QuestLogic:InitQuestLimitations()
             smartphoneSubSystem:MakeAllAppsAvailable()
 
             local questGenerator = FindFirstOf("BP_QuestGenerator_C")
-            questGenerator:start()            
+            questGenerator:start()
         end
 
     end)
     Utils.OnQuit(function()
         local functionName = "/Script/CashCleanerSim.Quest:OnRegistered"
         UnregisterHook(functionName, pre, post)
-    end) 
+    end)
 end
 
 function QuestLogic:SkipCurrentQuest()
@@ -423,17 +413,17 @@ function QuestLogic:PunishQuestCancel(questInstance)
         if objective.DesiredMoneyCurrency and objective.DesiredMoneyCurrency ~= nil then
 
             local dMoney = 0
-            if objective.DesiredMoneyValue and objective.DesiredMoneyValue ~= nil and objective.DesiredMoneyValue ~= 0 then
+            if objective.DesiredMoneyValue and objective.DesiredMoneyValue ~= 0 then
                 dMoney = objective.DesiredMoneyValue
             end
-            if objective.DesiredMoneyValueV2 and objective.DesiredMoneyValueV2 ~= nil then
+            if objective.DesiredMoneyValueV2 then
                 dMoney = objective.DesiredMoneyValueV2.Value
             end
 
             if objective.DesiredMoneyCurrency.TagName:ToString() ~= "Object.Property.Denomination.USD" then
                 dMoney = dMoney / (100 / MixPercentUpgrades[self.CurrentUpgrades["MixPercentUpgrades"]].Max )
             end
-            if objective.DesiredMoneyCurrency.TagName:ToString() == "Object.Property.Denomination.JPY" then                           
+            if objective.DesiredMoneyCurrency.TagName:ToString() == "Object.Property.Denomination.JPY" then
                 dMoney = dMoney / 100
             end
             dMoney = dMoney * (1.0 + AdditionalMoneyPercentUpgrades[self.CurrentUpgrades["AdditionalMoneyPercentUpgrades"]].Max / 100)
@@ -442,10 +432,7 @@ function QuestLogic:PunishQuestCancel(questInstance)
                 pig:SetNewGoal(pig.MoneyGoal + dMoney)
                 self:ForceOpenTube()
             end
-       
         end
-
-        i = i + 1
     end
 end
 
@@ -465,9 +452,9 @@ end
 
 function QuestLogic:AwardBonus(Bonus, ValidationRules)
     if Bonus ~= nil and Bonus:IsValid() then
-        local classText 
+        local classText
         local fullName = Bonus:GetClass():GetFullName()
-        
+
         if fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_ExactMoneyValue.BP_QuestBonus_ExactMoneyValue_C" then
             classText = "BP_QuestBonus_ExactMoneyValue_C"
         elseif fullName == "BlueprintGeneratedClass /Game/Core/Quests/Bonuses/BP_QuestBonus_MoreMoneyValue.BP_QuestBonus_MoreMoneyValue_C" then
@@ -522,7 +509,7 @@ function QuestLogic:AwardBonus(Bonus, ValidationRules)
             self.Reward:Check("Quest_Bonus_" .. classText .. "_with_quest")
         end
     end
-    
+
 end
 
 function QuestLogic:OnQuestFinish()
@@ -534,12 +521,12 @@ function QuestLogic:OnQuestFinish()
             if  tag.TagName:ToString() == "Quest.Property.NonDiscardable" then
                 isSide = false
             end
-            
+
             if tag.TagName:ToString():find("^Quest.Specific.Tutorial") or
                tag.TagName:ToString():find("^Quest.Specific.Main") or
                tag.TagName:ToString():find("^Quest.Specific.Side") then
                 isSide = false
-            end 
+            end
         end)
 
         local canceled = false
@@ -552,7 +539,7 @@ function QuestLogic:OnQuestFinish()
         if canceled then
             self:PunishQuestCancel(questInstance)
         end
-        
+
         if not canceled and not isSide then
             local mainQuestName = self:GetMainQuestName(questInstance)
             if not self.CompletedMainQuestsNames[mainQuestName] then
@@ -573,7 +560,7 @@ function QuestLogic:OnQuestFinish()
                 end
                 self:SetCompletedSideQuest(self.CompletedSideQuests + 1)
             end
-            
+
             local difficulty = questInstance.Info.Difficulty
             if difficulty > self.MaxDifficulty then
                 while self.MaxDifficulty < difficulty do
@@ -583,42 +570,38 @@ function QuestLogic:OnQuestFinish()
             end
 
             local ValidationRules = {}
+
             for i = 1, #questInstance.Objectives do
                 local objective = questInstance.Objectives[i]
-                if objective.DesiredMoneyCurrency ~= nil or objective.DesiredMoneyValueV2 ~= nil then
-                    if objective.ValidationRules ~= nil then
-                        if #objective.ValidationRules > 0 then
-                            for j = 1, #objective.ValidationRules do
-                                local rule = objective.ValidationRules[j]
-                                if rule:ToString() == "no-fake" then
-                                    ValidationRules["no-fake"] = true
-                                end
-                                if rule:ToString() == "no-mark" then
-                                    ValidationRules["no-mark"] = true
-                                end
-                                if rule:ToString():find("^blocks") then
-                                    ValidationRules["blocks"] = true
-                                end
-                                if rule:ToString():find("^packs") then
-                                    ValidationRules["packs"] = true
-                                end
-                                j = j + 1
-                            end
-                        end
+                local hasMoneyReq = (objective.DesiredMoneyCurrency ~= nil and objective.DesiredMoneyValue ~= nil)
+                if not hasMoneyReq or not objective.ValidationRules or #objective.ValidationRules == 0 then
+                    continue
+                end
+                for j = 1, #objective.ValidationRules do
+                    local rule = objective.ValidationRules[j]
+                    if rule:ToString() == "no-fake" then
+                        ValidationRules["no-fake"] = true
+                    end
+                    if rule:ToString() == "no-mark" then
+                        ValidationRules["no-mark"] = true
+                    end
+                    if rule:ToString():find("^blocks") then
+                        ValidationRules["blocks"] = true
+                    end
+                    if rule:ToString():find("^packs") then
+                        ValidationRules["packs"] = true
                     end
                 end
-                i = i + 1
             end
             local Bonuses = questInstance.Bonuses
             for i = 1, #Bonuses do
                 local bonus = Bonuses[i]
-                if bonus:IsCompleted() then 
+                if bonus:IsCompleted() then
                     self:AwardBonus(bonus, ValidationRules)
                 end
-                i = i + 1
             end
         end
-        
+
     end)
     Utils.OnQuit(function()
         local functionName = "/Script/CashCleanerSim.Quest:OnFinished"

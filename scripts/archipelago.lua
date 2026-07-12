@@ -71,13 +71,13 @@ function Archipelago:Connect(server, slot, password)
     local on_slot_refused = function(reasons)
         print("[Archipelago] Slot refused: " .. table.concat(reasons, ", "))
         Utils.Notify("[Archipelago] Slot refused: " .. table.concat(reasons, ", "))
-    end 
+    end
 
     local on_items_received = function(items)
         for _, item in ipairs(items) do
             local location
             local player = nil
-        
+
             if item.player == playerId then
                 location = ArchipelagoLists.APLocationIdToName[item.location]
             else
@@ -98,20 +98,20 @@ function Archipelago:Connect(server, slot, password)
 
     local on_location_checked = function(locations)
         print("[Archipelago] Calling location checked")
-    end 
+    end
 
     local on_data_package_changed = function(data_package)
         print("[Archipelago] Data package changed")
-    end 
+    end
 
     local on_print = function(msg)
         print("[Archipelago]" .. msg)
-    end 
+    end
 
     local on_print_json = function(msg, extra)
         print("[Archipelago] JSON Message:")
         print(ap:render_json(msg, message_format))
-    end 
+    end
 
     local on_bounced = function(bounce)
         print("[Archipelago] Bounced")
@@ -119,7 +119,7 @@ function Archipelago:Connect(server, slot, password)
 
     local on_retrieved = function(map, keys, extra)
         print("[Archipelago] Retrieved")
-    end 
+    end
 
     local on_set_reply = function(message)
         print("[Archipelago] Set Reply")
@@ -167,9 +167,9 @@ function Archipelago:SendLocationFromName(locationName)
         print("AP client not connected, cannot send location")
         return
     end
-     
+
     if locationID == nil then
-        print("Location name:"..locationName.."Is not valid.")
+        print("Location name: " .. locationName .. " is not valid.")
         return
     end
     ap:LocationChecks({tonumber(locationID)})

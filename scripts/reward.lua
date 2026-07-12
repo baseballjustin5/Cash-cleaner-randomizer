@@ -73,9 +73,9 @@ function Reward:GetLocationText(location, player)
     elseif location == "WorldInteractionsUpperArea" then
         return "Opening the upper area"
     elseif location == "WorldInteractionsDunked" then
-        return "Scoring 200 points"  
+        return "Scoring 200 points"
     elseif location == "WorldInteractionsOutOfBound" then
-        return "Going out of bounds"  
+        return "Going out of bounds"
     elseif location == "WorldInteractionsMoneyGun" then
         return "Buying a Money gun"
     elseif location:find("^WorldCollectiblesMarked") then
@@ -110,14 +110,14 @@ function Reward:GetRewardText(reward)
             return "less likely to have marked money"
         elseif reward == "Quest_RequiredMoneyFactorUpgrades" then
             return "less required money for quests"
-        elseif reward == "Quest_FillerPercentUpgrades" then    
-            return "less trash in containers"   
-        elseif reward == "Quest_MixPercentUpgrades" then  
-            return "less likely to have additional currency but get more of it"     
-        elseif reward == "Quest_RareMoneyPercentUpgrades" then  
-            return "more likely to find rare collectibles"     
-        elseif reward == "Quest_AdditionalMoneyPercentUpgrades" then   
-            return "more money at the start of quests"    
+        elseif reward == "Quest_FillerPercentUpgrades" then
+            return "less trash in containers"
+        elseif reward == "Quest_MixPercentUpgrades" then
+            return "less likely to have additional currency but get more of it"
+        elseif reward == "Quest_RareMoneyPercentUpgrades" then
+            return "more likely to find rare collectibles"
+        elseif reward == "Quest_AdditionalMoneyPercentUpgrades" then
+            return "more money at the start of quests"
         end
     elseif reward == "StackSizeUpgrade" then
         return "upgrading stack size"
@@ -171,7 +171,7 @@ function Reward:GetRewardText(reward)
         end
     else
         return reward
-    end     
+    end
 end
 
 function Reward:Check(location)

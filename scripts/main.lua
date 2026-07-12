@@ -5,20 +5,20 @@ local MarketLogic = require "marketLogic"
 local WorldInteraction = require "worldInteraction"
 local Reward = require "reward"
 local Save = require "save"
-local AP = require "lua-apclientpp"
+local _AP = require "lua-apclientpp"
 local Archipelago = require "archipelago"
 
 local mainGameMode = "/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C"
 
 ExecuteInGameThread(function()
 
-    LoadAsset(mainGameMode) 
+    LoadAsset(mainGameMode)
     RegisterHook(mainGameMode .. ":ReceiveBeginPlay", function(_self)
         local mainGameModeInstance = _self:get()
 
         if mainGameModeInstance == nil or not mainGameModeInstance:IsValid() then
             return
-        end 
+        end
         Utils.InitTickCallback()
         Reward:Init({
             QuestLogic = QuestLogic,
@@ -62,7 +62,7 @@ ExecuteInGameThread(function()
 
         QuestLogic:Start()
         WorldInteraction:ListenAllEvents()
-        
+
         Archipelago:ConnectToAp()
 
         Utils.OnWakeUp(function()
@@ -70,5 +70,5 @@ ExecuteInGameThread(function()
         end)
     end)
 
-    
+
 end)

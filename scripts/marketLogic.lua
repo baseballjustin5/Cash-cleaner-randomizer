@@ -24,7 +24,7 @@ local Upgrades = {
     ["BP_DetergentSourceComponent_C3"] = 0,
     ["BP_BigWasher_C"] = 0,
     ["BP_StickerGun_C"] = 0,
-    ["BP_PickupSensor_CoinCounter_C"] = 0   
+    ["BP_PickupSensor_CoinCounter_C"] = 0
 }
 MarketLogic.Upgrades = Upgrades
 
@@ -94,7 +94,7 @@ local UpgradesValues = {
     ["BP_DetergentSourceComponent_C3"] = HighUpgradeLevels,
     ["BP_BigWasher_C"] = HighUpgradeLevels,
     ["BP_StickerGun_C"] = BaseUpgradeLevels,
-    ["BP_PickupSensor_CoinCounter_C"] = LowUpgradeLevels   
+    ["BP_PickupSensor_CoinCounter_C"] = LowUpgradeLevels
 }
 
 MarketLogic.PriceSeed = os.time()
@@ -113,8 +113,8 @@ function MarketLogic:SetItemReputationReq(Product, ItemKey)
     end
 end
 
-function MarketLogic:LoadUpgrades(Upgrades)
-    self.Upgrades = Upgrades
+function MarketLogic:LoadUpgrades(UpgradeData)
+    self.Upgrades = UpgradeData
     self:InitLimitation()
 end
 
@@ -126,23 +126,23 @@ function MarketLogic:LoopProducts(Callback)
     local firstMarketSubsytem = FindFirstOf("BP_MarketSubsystem_C")
     if firstMarketSubsytem ~= nil and firstMarketSubsytem:IsValid() then
         local products = firstMarketSubsytem.MarketData.Products
-        
-        for i=1, #products do
+
+        for i = 1, #products do
             local product = products[i]
             if product == nil then
                 break
             end
             Callback(product)
-            i = i + 1
         end
     end
 end
+
 function MarketLogic:Upgrade(Target)
     self.Upgrades[Target] = self.Upgrades[Target] + 1
     self:LoopProducts(function(product)
         self:SetItemReputationReq(product, Target)
     end)
-   
+
 end
 
 function MarketLogic:InitLimitation()
@@ -157,26 +157,26 @@ end
 
 function MarketLogic:SpyMarketOrder()
     local pre, post = RegisterHook("/Game/Core/Market/FL_Market.FL_Market_C:SpawnMarketOrder", function(_self, _order, _spawner, __WorldContext)
-        local order = _order:get() 
-        for i=1, #order.Products do
+        local order = _order:get()
+        for i = 1, #order.Products do
             local product = order.Products[i]
             if product == nil then
                 break
             end
             -- Do Stuff
             i = i + 1
-        end 
+        end
 
     end, true)
     Utils.OnQuit(function()
         local functionName = "/Game/Core/Market/FL_Market.FL_Market_C:SpawnMarketOrder"
         UnregisterHook(functionName, pre, post)
-    end) 
+    end)
 end
 
 function MarketLogic:SetMarketPriceFree()
-    self:LoopProducts(function(product) 
-        product.Price = 0  
+    self:LoopProducts(function(product)
+        product.Price = 0
     end)
 end
 

@@ -1,7 +1,7 @@
 ---@meta
 
 ---@enum Key
-Key = {
+Keys = {
     LEFT_MOUSE_BUTTON = 0x1,
     RIGHT_MOUSE_BUTTON = 0x2,
     CANCEL = 0x3,
