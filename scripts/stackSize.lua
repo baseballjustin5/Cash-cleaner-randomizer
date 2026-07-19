@@ -48,9 +48,32 @@ local function counterConfig(incomingFactor, upgradeLevel)
         BundleReplacements = currentConfig.BundleReplacements
     }
 end
-local function generateTier3Config(upgradeLevel) return counterConfig(10, upgradeLevel) end
-local function generateTier2Config(upgradeLevel) return counterConfig(7.5, upgradeLevel) end
-local function generateTier1Config(upgradeLevel) return counterConfig(5, upgradeLevel) end
+
+local function generateTier3Config(upgradeLevel)
+    return counterConfig(10, upgradeLevel)
+end
+
+local function generateTier2Config(upgradeLevel)
+    return counterConfig(7.5, upgradeLevel)
+end
+
+local function generateTier1Config(upgradeLevel)
+    return counterConfig(5, upgradeLevel)
+end
+
+local function ApplySettings(counter, bpConfig)
+    if not counter then
+        return
+    end
+
+    if counter.MaxIncomingBillsCount then
+        counter.MaxIncomingBillsCount = bpConfig.MaxIncomingBillsCount
+    end
+
+    if counter.MaxOutgoingBillsCount then
+        counter.MaxOutgoingBillsCount = bpConfig.MaxOutgoingBillsCount
+    end
+end
 
 function StackSize:changeInOutSettings(upgradeLevel)
     ExecuteInGameThread(function()
@@ -78,35 +101,15 @@ function StackSize:changeInOutSettings(upgradeLevel)
                     if not allCounter or #allCounter == 0 then
                         continue
                     end
-                    for _, counter in ipairs(allCounter) do
-                        if not counter then
-                            continue
-                        end
 
-                        if counter.MaxIncomingBillsCount then
-                            counter.MaxIncomingBillsCount = bpConfig.MaxIncomingBillsCount
-                        end
-
-                        if counter.MaxOutgoingBillsCount then
-                            counter.MaxOutgoingBillsCount = bpConfig.MaxOutgoingBillsCount
-                        end
+                    for _, InitCounter in pairs(allCounter) do
+                       ApplySettings(InitCounter, bpConfig)
                     end
 
                     LoadAsset(moneyCounterBP)
                     local mainPre, mainPost = RegisterHook(moneyCounterBP .. ":Initialize", function(_self)
                         local counter = _self:get()
-
-                        if not counter or not counter:IsValid() then
-                            return
-                        end
-
-                        if counter.MaxIncomingBillsCount then
-                            counter.MaxIncomingBillsCount = bpConfig.MaxIncomingBillsCount
-                        end
-
-                        if counter.MaxOutgoingBillsCount then
-                            counter.MaxOutgoingBillsCount = bpConfig.MaxOutgoingBillsCount
-                        end
+                        ApplySettings(counter, bpConfig)
                     end)
                     if counterBlueprints[bp.key].hooks.main ~= nil then
                         local functionName = moneyCounterBP .. ":Initialize"

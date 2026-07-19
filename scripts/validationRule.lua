@@ -1,4 +1,4 @@
-local ValidationRules = {
+ValidationRules = {
     -- some missing ?
     ["in-a-backpack"] = true,
     ["in-a-bag"] = true,
