@@ -38,7 +38,9 @@ function Archipelago:ReadConfig()
         self.host = data.host
         self.slot = data.player
         self.password = data.password
-        self.MarketLogic:SetMarketSeed(math.tointeger(math.fmod(data.seed, math.maxinteger)))
+        if data.seed then
+            self.MarketLogic:SetMarketSeed(math.tointeger(math.fmod(data.seed, math.maxinteger)))
+        end
     end
 end
 
@@ -66,6 +68,18 @@ function Archipelago:Connect(server, slot, password)
         playerId = ap:get_player_number()
         ap:ConnectUpdate(nil, {"Lua-APClientPP"})
         Utils.Notify("[Archipelago] Connected to server")
+
+        if Archipelago.pendingChecks and #Archipelago.pendingChecks > 0 then
+            print("[Archipelago] Flushing pending location checks")
+            for _, locationName in ipairs(Archipelago.pendingChecks) do
+                local locationID = self:GetAPLocationIDfromName(locationName)
+                if locationID then
+                    print("[Archipelago] Sending pending location check for: " .. tostring(locationName))
+                    ap:LocationChecks({tonumber(locationID)})
+                end
+            end
+            Archipelago.pendingChecks = {}
+        end
     end
 
     local on_slot_refused = function(reasons)
@@ -163,21 +177,26 @@ end
 
 function Archipelago:SendLocationFromName(locationName)
     local locationID = self:GetAPLocationIDfromName(locationName)
-    if ap == nil then
-        print("AP client not connected, cannot send location")
-        return
-    end
 
     if locationID == nil then
         print("Location name: " .. locationName .. " is not valid.")
         return
     end
+
+    if ap == nil then
+        print("AP client not connected, queueing location: " .. tostring(locationName))
+        print("[Archipelago] Will try again when connected.")
+        table.insert(self.pendingChecks, locationName)
+        return
+    end
+
     ap:LocationChecks({tonumber(locationID)})
 end
 
 function Archipelago:Goal()
     if ap == nil then
         print("AP client not connected, cannot send goal")
+        table.insert(self.pendingGoal, true)
         return
     end
     ap:StatusUpdate(AP.ClientStatus.GOAL)
