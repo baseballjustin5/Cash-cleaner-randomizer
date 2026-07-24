@@ -5,7 +5,7 @@ local MarketLogic = require "marketLogic"
 local WorldInteraction = require "worldInteraction"
 local Reward = require "reward"
 local Save = require "save"
-local _AP = require "lua-apclientpp"
+local AP = require "lua-apclientpp"
 local Archipelago = require "archipelago"
 
 local mainGameMode = "/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C"

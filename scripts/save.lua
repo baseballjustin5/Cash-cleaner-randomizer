@@ -20,7 +20,7 @@ end
 function Save:WriteSave(data)
     local f, err = io.open(self.SAVE_PATH, "w")
     if not f then
-        print("[Randomizer] Error saving with error: " .. tostring(err))
+        print("[Randomizer] Error saving with error string: " .. tostring(err) .. "\n")
         return false
     end
 
@@ -59,7 +59,8 @@ function Save:Default()
             ExpectedReputation = self.Reward.ExpectedReputation
         },
         Archipelago = {
-            CheckedLocation = self.Archipelago.CheckedLocation
+            CheckedLocation = self.Archipelago.CheckedLocation,
+            PendingChecks = self.Archipelago.pendingChecks
         }
     }
 end
@@ -67,11 +68,11 @@ end
 function Save:ReadSave()
     local ok, data = pcall(dofile, self.SAVE_PATH)
     if ok and type(data) == "table" then
-        print("[Randomizer] Save data loaded")
+        print("[Randomizer] Save data loaded\n")
         return data
     end
 
-    print("[Randomizer] Creating new save data")
+    print("[Randomizer] Creating new save data\n")
     return self:Default()
 end
 
@@ -138,7 +139,8 @@ function Save:OnChange()
             ExpectedReputation = self.Reward.ExpectedReputation
         },
         Archipelago = {
-            CheckedLocation = self.Archipelago.CheckedLocation
+            CheckedLocation = self.Archipelago.CheckedLocation,
+            PendingChecks = self.Archipelago.pendingChecks
         }
     }
 

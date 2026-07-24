@@ -183,8 +183,8 @@ end
 function Reward:Goal()
     Utils.ThrottledCall(function()
         if not self.Archipelago or not self.Archipelago:IsConnected() then
-            print("[Archipelago] Not connected to server, cannot complete goal.")
-            print("[Archipelago] Will try again when connected.")
+            print("[Archipelago] Not connected to server, cannot complete goal." .. "\n")
+            print("[Archipelago] Will try again when connected." .. "\n")
             return
         end
         self.Archipelago:Goal()
