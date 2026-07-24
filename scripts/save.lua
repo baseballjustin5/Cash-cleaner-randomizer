@@ -20,7 +20,7 @@ end
 function Save:WriteSave(data)
     local f, err = io.open(self.SAVE_PATH, "w")
     if not f then
-        print("[Randomizer] Error saving with error: ".. tostring(err))
+        print("[Randomizer] Error saving with error: " .. tostring(err))
         return false
     end
 
