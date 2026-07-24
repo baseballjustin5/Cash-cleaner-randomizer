@@ -271,7 +271,7 @@ function QuestLogic:LogQuestRegistered()
                 local objective = quest.Objectives[i]
                 if not objective.DesiredMoneyCurrency or not
                 objective.DesiredMoneyValue then
-                    continue
+                    goto next_value
                 end
 
                 local amount = objective.DesiredMoneyValue or 0
@@ -290,6 +290,7 @@ function QuestLogic:LogQuestRegistered()
                         dMoney[tagName].Rules[rule:ToString()] = true
                     end
                 end
+                ::next_value::
             end
         end)
         local questInfo = {
@@ -355,7 +356,7 @@ function QuestLogic:InitQuestLimitations()
                         self:QuestHasTag(quest, "Quest.Specific.Side.CleanCut")
 
                     if not isTarget or not reward.SpawnRequests or #reward.SpawnRequests == 0 then
-                        continue
+                        return
                     end
                         for j = 1, #reward.SpawnRequests do
                             local SpawnRequest = reward.SpawnRequests[j]
@@ -575,7 +576,7 @@ function QuestLogic:OnQuestFinish()
                 local objective = questInstance.Objectives[i]
                 local hasMoneyReq = (objective.DesiredMoneyCurrency ~= nil and objective.DesiredMoneyValue ~= nil)
                 if not hasMoneyReq or not objective.ValidationRules or #objective.ValidationRules == 0 then
-                    continue
+                    goto next_value
                 end
                 for j = 1, #objective.ValidationRules do
                     local rule = objective.ValidationRules[j]
@@ -592,6 +593,7 @@ function QuestLogic:OnQuestFinish()
                         ValidationRules["packs"] = true
                     end
                 end
+                ::next_value::
             end
             local Bonuses = questInstance.Bonuses
             for i = 1, #Bonuses do

@@ -39,7 +39,9 @@ WorldInteraction.Collectibles = Collectibles
 -- 24 location
 function WorldInteraction:OnCollectible()
     ExecuteInGameThread(function()
-        local pre, post = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterMarkCollectibles", function(_self, Container)
+        local pre, post = RegisterHook(
+        "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollection",
+        function(_self, Container)
             Utils.LoopGameplayTagContainer(Collectibles:get(), function(tag, index)
                 if self.Collectibles["Marked"][tag.TagName:ToString()] then
                     self.Collectibles["Marked"][tag.TagName:ToString()] = false
@@ -49,10 +51,10 @@ function WorldInteraction:OnCollectible()
             end)
         end)
         Utils.OnQuit(function()
-            local functionName = "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterMarkCollectibles"
+            local functionName = "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollection"
             UnregisterHook(functionName, pre, post)
         end)
-        local pre2, post2 = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollectibles", function(_self, Container)
+        local pre2, post2 = RegisterHook("/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollection", function(_self, Container)
             Utils.LoopGameplayTagContainer(Collectibles:get(), function(tag, index)
                 if self.Collectibles["Bill"][tag.TagName:ToString()] then
                     self.Collectibles["Bill"][tag.TagName:ToString()] = false
@@ -68,7 +70,7 @@ function WorldInteraction:OnCollectible()
             end)
         end)
         Utils.OnQuit(function()
-            local functionName = "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollectibles"
+            local functionName = "/Game/Core/Collectibles/BP_CollectibleSubsystem.BP_CollectibleSubsystem_C:RegisterCollection"
             UnregisterHook(functionName, pre2, post2)
         end)
     end)

@@ -1,4 +1,5 @@
 local Archipelago = {}
+Archipelago.pendingChecks = {}
 
 local ArchipelagoLists = require "ArchipelagoLists"
 local AP = require "lua-apclientpp"
@@ -46,35 +47,35 @@ end
 
 function Archipelago:Connect(server, slot, password)
     local on_socket_connected = function()
-        print("[Archipelago] Socket connected" )
+        print("[Archipelago] Socket connected" .. "\n")
     end
 
     local on_socket_error = function(msg)
-       print("[Archipelago] Socket error: " .. msg)
+       print("[Archipelago] Socket error: " .. msg .. "\n")
     end
 
     local on_socket_disconnected = function()
-        print("[Archipelago] Socket disconnected")
-        Utils.Notify("[Archipelago] Disconnected from server")
+        print("[Archipelago] Socket disconnected" .. "\n")
+        Utils.Notify("[Archipelago] Disconnected from server" .. "\n")
     end
 
     local on_room_info = function()
-        print("[Archipelago] Room info")
+        print("[Archipelago] Room info" .. "\n")
         ap:ConnectSlot(slot, password, items_handling, {"Lua-APClientPP"}, client_version)
     end
 
     local on_slot_connected = function(slot_data)
-        print("[Archipelago] Slot connected")
+        print("[Archipelago] Slot connected" .. "\n")
         playerId = ap:get_player_number()
         ap:ConnectUpdate(nil, {"Lua-APClientPP"})
         Utils.Notify("[Archipelago] Connected to server")
 
         if Archipelago.pendingChecks and #Archipelago.pendingChecks > 0 then
-            print("[Archipelago] Flushing pending location checks")
+            print("[Archipelago] Flushing pending location checks" .. "\n")
             for _, locationName in ipairs(Archipelago.pendingChecks) do
                 local locationID = self:GetAPLocationIDfromName(locationName)
                 if locationID then
-                    print("[Archipelago] Sending pending location check for: " .. tostring(locationName))
+                    print("[Archipelago] Sending pending location check for: " .. tostring(locationName) .. "\n")
                     ap:LocationChecks({tonumber(locationID)})
                 end
             end
@@ -83,7 +84,7 @@ function Archipelago:Connect(server, slot, password)
     end
 
     local on_slot_refused = function(reasons)
-        print("[Archipelago] Slot refused: " .. table.concat(reasons, ", "))
+        print("[Archipelago] Slot refused: " .. table.concat(reasons, ", ") .. "\n")
         Utils.Notify("[Archipelago] Slot refused: " .. table.concat(reasons, ", "))
     end
 
@@ -107,41 +108,41 @@ function Archipelago:Connect(server, slot, password)
     end
 
     local on_location_info = function(items)
-        print("[Archipelago] Locations scouted")
+        print("[Archipelago] Locations scouted" .. "\n")
     end
 
     local on_location_checked = function(locations)
-        print("[Archipelago] Calling location checked")
+        print("[Archipelago] Calling location checked" .. "\n")
     end
 
     local on_data_package_changed = function(data_package)
-        print("[Archipelago] Data package changed")
+        print("[Archipelago] Data package changed" .. "\n")
     end
 
     local on_print = function(msg)
-        print("[Archipelago]" .. msg)
+        print("[Archipelago]" .. tostring(msg) .. "\n")
     end
 
     local on_print_json = function(msg, extra)
-        print("[Archipelago] JSON Message:")
-        print(ap:render_json(msg, message_format))
+        print("[Archipelago] JSON Message:" .. "\n")
+        print(ap:render_json(msg, message_format) .. "\n")
     end
 
     local on_bounced = function(bounce)
-        print("[Archipelago] Bounced")
+        print("[Archipelago] Bounced" .. "\n")
     end
 
     local on_retrieved = function(map, keys, extra)
-        print("[Archipelago] Retrieved")
+        print("[Archipelago] Retrieved" .. "\n")
     end
 
     local on_set_reply = function(message)
-        print("[Archipelago] Set Reply")
+        print("[Archipelago] Set Reply" .. "\n")
     end
 
     local uuid = ""
     ap = AP(uuid, game_name, server);
-    print("[Archipelago] Connecting to " .. server .. " ...")
+    print("[Archipelago] Connecting to " .. server .. " ..." .. "\n")
     ap:set_socket_connected_handler(on_socket_connected)
     ap:set_socket_error_handler(on_socket_error)
     ap:set_socket_disconnected_handler(on_socket_disconnected)
@@ -176,26 +177,38 @@ function Archipelago:Disconnect()
 end
 
 function Archipelago:SendLocationFromName(locationName)
-    local locationID = self:GetAPLocationIDfromName(locationName)
-
-    if locationID == nil then
-        print("Location name: " .. locationName .. " is not valid.")
-        return
+    if type(self.pendingChecks) ~= "table" then
+        self.pendingChecks = {}
     end
 
-    if ap == nil then
-        print("AP client not connected, queueing location: " .. tostring(locationName))
-        print("[Archipelago] Will try again when connected.")
+    if not isConnected or ap == nil then
+        print("AP client not connected, queueing location: " .. tostring(locationName) .. "\n")
+        print("[Archipelago] Will try again when connected." .. "\n")
         table.insert(self.pendingChecks, locationName)
         return
     end
 
-    ap:LocationChecks({tonumber(locationID)})
+    local locationID = self:GetAPLocationIDfromName(locationName)
+    if locationID == nil then
+        print("Location name: " .. locationName .. " is not valid." .. "\n")
+        return
+    end
+
+    local success, err = pcall(function()
+        ap:LocationChecks({tonumber(locationID)})
+    end)
+    if not success then
+        print("Error sending location with error: " .. tostring(err) .. "\n")
+        table.insert(self.pendingChecks, locationName)
+        for index, location in ipairs(self.pendingChecks) do
+            print(string.index .. ": " .. tostring(location))
+        end
+    end
 end
 
 function Archipelago:Goal()
     if ap == nil then
-        print("AP client not connected, cannot send goal")
+        print("AP client not connected, cannot send goal" .. "\n")
         table.insert(self.pendingGoal, true)
         return
     end

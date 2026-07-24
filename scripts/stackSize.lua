@@ -124,7 +124,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
     ExecuteInGameThread(function()
         -- Loop to force load everything
         self.MarketLogic:LoopProducts(function(product)
-            print("[Randomizer] Loading all market products ", product)
+            print("[Randomizer] Loading all market products ", product, "\n")
         end)
         Utils.DelayedCall(function()
             ExecuteInGameThread(function()
@@ -145,7 +145,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
                     local allCounter = FindAllOf(bp.key .. "_C")
 
                     if not allCounter or #allCounter == 0 then
-                        continue
+                        goto next_pair
                     end
 
                     for _, InitCounter in pairs(allCounter) do
@@ -160,7 +160,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
                     end)
 
                     if not counterBlueprints[bp.key].hooks.main then
-                        continue
+                        goto next_pair
                     end
 
                     local functionName = moneyCounterBP .. ":Initialize"
@@ -214,6 +214,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
                             pre = postPre, post = postPost
                         }
                     end
+                    ::next_pair::
                 end
             end)
         end, 250)
