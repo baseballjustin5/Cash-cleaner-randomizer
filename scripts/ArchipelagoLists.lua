@@ -11,6 +11,7 @@ ArchipelagoLists.APItemIdToName = {
     [0xCE0510] = "Quest_AdditionalMoneyPercentUpgrades",
     [0xCE0512] = "StackSizeUpgrade",
     [0xCE0516] = "ReputationGain",
+    [0xCE0517] = "ReputationGain", -- Filler Rep
     [0xCE0541] = "MoneyGain",
     [0xCE054A] = "Market_BP_MoneyGun_C",
     [0xCE054B] = "Market_BP_Washer_C",
