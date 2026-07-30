@@ -10,11 +10,17 @@ function Save:Init(ctx)
     self.MarketLogic = ctx.MarketLogic
     self.WorldInteraction = ctx.WorldInteraction
     self.Reward = ctx.Reward
+    self.Archipelago = ctx.Archipelago
+
+    Utils.OnQuit(function()
+        self:OnChange()
+    end)
 end
 
 function Save:WriteSave(data)
     local f, err = io.open(self.SAVE_PATH, "w")
     if not f then
+        print("[Randomizer] Error saving with error string: " .. tostring(err) .. "\n")
         return false
     end
 
@@ -51,6 +57,10 @@ function Save:Default()
         },
         Reward = {
             ExpectedReputation = self.Reward.ExpectedReputation
+        },
+        Archipelago = {
+            CheckedLocation = self.Archipelago.CheckedLocation,
+            PendingChecks = self.Archipelago.pendingChecks
         }
     }
 end
@@ -58,11 +68,11 @@ end
 function Save:ReadSave()
     local ok, data = pcall(dofile, self.SAVE_PATH)
     if ok and type(data) == "table" then
-        print("[Randomizer] Save data loaded")
+        print("[Randomizer] Save data loaded\n")
         return data
     end
 
-    print("[Randomizer] Creating new save data")
+    print("[Randomizer] Creating new save data\n")
     return self:Default()
 end
 
@@ -95,6 +105,10 @@ function Save:LoadSave()
     if LoadedData.Reward then
         self.Reward:SetExpectedReputation(LoadedData.Reward.ExpectedReputation)
     end
+
+    if LoadedData.Archipelago then
+        self.Archipelago:SetCheckedLocation(LoadedData.Archipelago.CheckedLocation)
+    end
 end
 
 
@@ -123,6 +137,10 @@ function Save:OnChange()
         },
         Reward = {
             ExpectedReputation = self.Reward.ExpectedReputation
+        },
+        Archipelago = {
+            CheckedLocation = self.Archipelago.CheckedLocation,
+            PendingChecks = self.Archipelago.pendingChecks
         }
     }
 

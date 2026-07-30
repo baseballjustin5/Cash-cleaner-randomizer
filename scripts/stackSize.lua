@@ -1,7 +1,7 @@
 local Utils = require "utils"
 
 local StackSize = {}
-local marketSubsystem = "/Game/Core/Market/BP_MarketSubsystem.BP_MarketSubsystem_C"
+-- local marketSubsystem = "/Game/Core/Market/BP_MarketSubsystem.BP_MarketSubsystem_C"
 
 local function generateBundle(MaxStackSize)
     return {
@@ -26,9 +26,9 @@ local sizeUpgrade = {
 local counterBlueprints = {
     ["BP_MoneyCounterTier3"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier3.BP_MoneyCounterTier3_C", key = "BP_MoneyCounterTier3", hooks = { main = nil, pre = nil, post = nil} },
     ["BP_MoneyCounter"] = { path = "/Game/Core/Objects/BP_MoneyCounter.BP_MoneyCounter_C", key = "BP_MoneyCounter", hooks = { main = nil, post = nil} },
-    ["BP_MarkedCounter"] = { path = "/Game/Core/Objects/BP_MarkedCounter.BP_MarkedCounter_C", key = "BP_MarkedCounter", hooks = { main = nil, post = nil} }, 
-    ["BP_MoneyCounterTier2_Euro"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Euro.BP_MoneyCounterTier2_Euro_C", key = "BP_MoneyCounterTier2_Euro", hooks =  { main = nil, post = nil} }, 
-    ["BP_MoneyCounterTier2_Yen"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Yen.BP_MoneyCounterTier2_Yen_C", key = "BP_MoneyCounterTier2_Yen", hooks =  { main = nil, post = nil} }, 
+    ["BP_MarkedCounter"] = { path = "/Game/Core/Objects/BP_MarkedCounter.BP_MarkedCounter_C", key = "BP_MarkedCounter", hooks = { main = nil, post = nil} },
+    ["BP_MoneyCounterTier2_Euro"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Euro.BP_MoneyCounterTier2_Euro_C", key = "BP_MoneyCounterTier2_Euro", hooks =  { main = nil, post = nil} },
+    ["BP_MoneyCounterTier2_Yen"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Yen.BP_MoneyCounterTier2_Yen_C", key = "BP_MoneyCounterTier2_Yen", hooks =  { main = nil, post = nil} },
     ["BP_MoneyCounterTier2"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2.BP_MoneyCounterTier2_C", key = "BP_MoneyCounterTier2", hooks = { main = nil, post = nil} },
 }
 
@@ -48,17 +48,85 @@ local function counterConfig(incomingFactor, upgradeLevel)
         BundleReplacements = currentConfig.BundleReplacements
     }
 end
-local function generateTier3Config(upgradeLevel) return counterConfig(10, upgradeLevel) end
-local function generateTier2Config(upgradeLevel) return counterConfig(7.5, upgradeLevel) end
-local function generateTier1Config(upgradeLevel) return counterConfig(5, upgradeLevel) end
+
+local function generateTier3Config(upgradeLevel)
+    return counterConfig(10, upgradeLevel)
+end
+
+local function generateTier2Config(upgradeLevel)
+    return counterConfig(7.5, upgradeLevel)
+end
+
+local function generateTier1Config(upgradeLevel)
+    return counterConfig(5, upgradeLevel)
+end
+
+local function ApplySettings(counter, bpConfig)
+    if not counter then
+        return
+    end
+
+    if counter.MaxIncomingBillsCount then
+        counter.MaxIncomingBillsCount = bpConfig.MaxIncomingBillsCount
+    end
+
+    if counter.MaxOutgoingBillsCount then
+        counter.MaxOutgoingBillsCount = bpConfig.MaxOutgoingBillsCount
+    end
+end
+
+local lastSlotIndex = nil
+local lastCountSetting = nil
+
+function SetCurrentT3StackSize(_self, slotIndex, CountSetting)
+    if slotIndex then
+        local currentSlotIndex = slotIndex:get()
+        if currentSlotIndex ~= lastSlotIndex then
+            lastSlotIndex = currentSlotIndex
+        end
+    end
+end
+
+function UnregisterSafely(functionName, HookData)
+    if not HookData then
+        return
+    end
+    pcall(function()
+        UnregisterHook(functionName, HookData.pre, HookData.post)
+    end)
+end
+
+function UpdateStackSize(_self, CountSetting)
+    if CountSetting then
+        local currentCountSetting = CountSetting:get()
+        if bpConfig.BundleReplacements and bpConfig.BundleReplacements[currentCountSetting] then
+            local newVal = bpConfig.BundleReplacements[currentCountSetting]
+            CountSetting:set(newVal)
+        elseif currentCountSetting ~= lastCountSetting then
+            lastCountSetting = currentCountSetting
+        end
+    end
+end
+
+function UpdateT3StackSize(_self, slotIndex, CountSetting)
+    if CountSetting then
+        local currentCountSetting = CountSetting:get()
+        if bpConfig.BundleReplacements and bpConfig.BundleReplacements[currentCountSetting] then
+            local newVal = bpConfig.BundleReplacements[currentCountSetting]
+            CountSetting:set(newVal)
+        elseif currentCountSetting ~= lastCountSetting then
+            lastCountSetting = currentCountSetting
+        end
+    end
+end
 
 function StackSize:changeInOutSettings(upgradeLevel)
     ExecuteInGameThread(function()
         -- Loop to force load everything
         self.MarketLogic:LoopProducts(function(product)
-            print('loading product', product)
+            print("[Randomizer] Loading all market products ", product, "\n")
         end)
-        ExecuteWithDelay(250, function()
+        Utils.DelayedCall(function()
             ExecuteInGameThread(function()
 
                 local config =  {
@@ -69,121 +137,87 @@ function StackSize:changeInOutSettings(upgradeLevel)
                     BP_MoneyCounterTier2 = generateTier2Config(upgradeLevel),
                     BP_MoneyCounterTier3 = generateTier3Config(upgradeLevel),
                 }
+
                 for _, bp in pairs(counterBlueprints) do
 
                     local moneyCounterBP = bp.path
-                    local bpConfig = config[bp.key]
+                    bpConfig = config[bp.key]
+                    local allCounter = FindAllOf(bp.key .. "_C")
 
-                    local allCounter = FindAllOf(bp.key .. '_C')
-                    if allCounter ~= nil and #allCounter > 0 then
-                        for i=1, #allCounter do
-                            local counter = allCounter[i]
-                            if counter == nil then
-                                break
-                            end
+                    if not allCounter or #allCounter == 0 then
+                        goto next_pair
+                    end
 
-                            if counter.MaxIncomingBillsCount ~= nil then
-                                counter.MaxIncomingBillsCount = bpConfig.MaxIncomingBillsCount
-                            end
-                            
-                            if counter.MaxOutgoingBillsCount ~= nil then
-                                counter.MaxOutgoingBillsCount = bpConfig.MaxOutgoingBillsCount
-                            end
-
-                            i = i + 1
-                        end
+                    for _, InitCounter in pairs(allCounter) do
+                       ApplySettings(InitCounter, bpConfig)
                     end
 
                     LoadAsset(moneyCounterBP)
-                    local mainPre, mainPost = RegisterHook(moneyCounterBP .. ":Initialize", function(_self)
+                    local mainPre, mainPost = RegisterHook(
+                        moneyCounterBP .. ":Initialize", function(_self)
                         local counter = _self:get()
-
-                        if not counter or not counter:IsValid() then
-                            return
-                        end
-                                        
-                        if counter.MaxIncomingBillsCount ~= nil then
-                            counter.MaxIncomingBillsCount = bpConfig.MaxIncomingBillsCount
-                        end
-                        
-                        if counter.MaxOutgoingBillsCount ~= nil then
-                            counter.MaxOutgoingBillsCount = bpConfig.MaxOutgoingBillsCount
-                        end
+                        ApplySettings(counter, bpConfig)
                     end)
-                    if counterBlueprints[bp.key].hooks.main ~= nil then
-                        local functionName = moneyCounterBP .. ":Initialize"
-                        pcall(function() 
-                            UnregisterHook(functionName, counterBlueprints[bp.key].hooks.main.pre, counterBlueprints[bp.key].hooks.main.post)
-                        end)
+
+                    if not counterBlueprints[bp.key].hooks.main then
+                        goto next_pair
                     end
-                    counterBlueprints[bp.key].hooks.main = { pre = mainPre, post = mainPost }
+
+                    local functionName = moneyCounterBP .. ":Initialize"
+                    pcall(function()
+                        UnregisterHook(functionName,
+                        counterBlueprints[bp.key].hooks.main.pre,
+                        counterBlueprints[bp.key].hooks.main.post)
+                    end)
+
+                    counterBlueprints[bp.key].hooks.main = {
+                        pre = mainPre, post = mainPost
+                    }
 
                     if bp.key == "BP_MoneyCounterTier3" then
 
-                        local lastSlotIndex = nil
-                        local lastCountSetting = nil
-                        
-                        local prePre, prePost = RegisterHook(moneyCounterBP .. ":GetCountSetting", function(_self, slotIndex, CountSetting)
-                            if slotIndex then
-                                local currentSlotIndex = slotIndex:get()
-                                if currentSlotIndex ~= lastSlotIndex then
-                                    lastSlotIndex = currentSlotIndex
-                                end
-                            end
-                        end, true)
-                        if counterBlueprints[bp.key].hooks.pre ~= nil then
-                            local functionName = moneyCounterBP .. ":GetCountSetting"
-                            pcall(function() 
-                                UnregisterHook(functionName, counterBlueprints[bp.key].hooks.pre.pre, counterBlueprints[bp.key].hooks.pre.post)
-                            end)
-                        end
-                        counterBlueprints[bp.key].hooks.pre = { pre = prePre, post = prePost }
+                        local prePre, prePost = RegisterHook(
+                            moneyCounterBP .. ":GetCountSetting",
+                            SetCurrentT3StackSize, true
+                        )
 
-                        local postPre, postPost = RegisterHook(moneyCounterBP .. ":GetCountSetting", function(_self, slotIndex, CountSetting)
-                            if CountSetting then
-                                local currentCountSetting = CountSetting:get()
-                                if bpConfig.BundleReplacements and bpConfig.BundleReplacements[currentCountSetting] then
-                                    local newVal = bpConfig.BundleReplacements[currentCountSetting]
-                                    CountSetting:set(newVal)
-                                elseif currentCountSetting ~= lastCountSetting then
-                                    lastCountSetting = currentCountSetting
-                                end
-                            end
-                        end)
-                        if counterBlueprints[bp.key].hooks.post ~= nil then
-                            local functionName = moneyCounterBP .. ":GetCountSetting"
-                            pcall(function() 
-                                UnregisterHook(functionName, counterBlueprints[bp.key].hooks.post.pre, counterBlueprints[bp.key].hooks.post.post)
-                            end)
-                        end
-                        counterBlueprints[bp.key].hooks.post = { pre = postPre, post = postPost }
+                        UnregisterSafely(moneyCounterBP .. ":GetCountSetting",
+                            counterBlueprints[bp.key].hooks.pre)
+
+                        counterBlueprints[bp.key].hooks.pre = {
+                            pre = prePre, post = prePost
+                        }
+
+                        local postPre, postPost = RegisterHook(
+                            moneyCounterBP .. ":GetCountSetting",
+                            UpdateT3StackSize
+                        )
+
+                        UnregisterSafely(moneyCounterBP .. ":GetCountSetting",
+                            counterBlueprints[bp.key].hooks.post)
+                        counterBlueprints[bp.key].hooks.post = {
+                            pre = postPre, post = postPost
+                        }
+
                     else
-                        
-                        local lastCountSetting = nil
-                        
-                        local postPre, postPost = RegisterHook(moneyCounterBP .. ":GetCountSetting", function(_self, CountSetting)
-                            if CountSetting then
-                                local currentCountSetting = CountSetting:get()
-                                if bpConfig.BundleReplacements and bpConfig.BundleReplacements[currentCountSetting] then
-                                    local newVal = bpConfig.BundleReplacements[currentCountSetting]
-                                    CountSetting:set(newVal)
-                                elseif currentCountSetting ~= lastCountSetting then
-                                    lastCountSetting = currentCountSetting
-                                end
-                            end
-                        end)
-                        if counterBlueprints[bp.key].hooks.post ~= nil then
-                            local functionName = moneyCounterBP .. ":GetCountSetting"
-                            pcall(function() 
-                                UnregisterHook(functionName, counterBlueprints[bp.key].hooks.post.pre, counterBlueprints[bp.key].hooks.post.post)
-                            end)
-                        end
 
-                        counterBlueprints[bp.key].hooks.post = { pre = postPre, post = postPost }
+                        local postPre, postPost = RegisterHook(
+                            moneyCounterBP .. ":GetCountSetting",
+                            UpdateStackSize
+                        )
+
+                        UnregisterSafely(moneyCounterBP .. ":GetCountSetting",
+                            counterBlueprints[bp.key].hooks.post
+                        )
+
+                        counterBlueprints[bp.key].hooks.post = {
+                            pre = postPre, post = postPost
+                        }
                     end
+                    ::next_pair::
                 end
             end)
-        end)
+        end, 250)
     end)
     Utils.OnQuit(function()
         for _, bp in pairs(counterBlueprints) do
@@ -191,7 +225,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
 
             if counterBlueprints[bp.key].hooks.main ~= nil then
                 local functionName = moneyCounterBP .. ":Initialize"
-                pcall(function() 
+                pcall(function()
                     UnregisterHook(functionName, counterBlueprints[bp.key].hooks.main.pre, counterBlueprints[bp.key].hooks.main.post)
                 end)
             end
@@ -199,20 +233,20 @@ function StackSize:changeInOutSettings(upgradeLevel)
             if bp.key == "BP_MoneyCounterTier3" then
                 if counterBlueprints[bp.key].hooks.pre ~= nil then
                     local functionName = moneyCounterBP .. ":GetCountSetting"
-                    pcall(function() 
+                    pcall(function()
                         UnregisterHook(functionName, counterBlueprints[bp.key].hooks.pre.pre, counterBlueprints[bp.key].hooks.pre.post)
                     end)
                 end
                 if counterBlueprints[bp.key].hooks.post ~= nil then
                     local functionName = moneyCounterBP .. ":GetCountSetting"
-                    pcall(function() 
+                    pcall(function()
                         UnregisterHook(functionName, counterBlueprints[bp.key].hooks.post.pre, counterBlueprints[bp.key].hooks.post.post)
                     end)
                 end
             else
                 if counterBlueprints[bp.key].hooks.post ~= nil then
                     local functionName = moneyCounterBP .. ":GetCountSetting"
-                    pcall(function() 
+                    pcall(function()
                         UnregisterHook(functionName, counterBlueprints[bp.key].hooks.post.pre, counterBlueprints[bp.key].hooks.post.post)
                     end)
                 end
@@ -234,7 +268,7 @@ local function changeStackSize(upgradeLevel)
 
             if stackBlueprints[bp.key].hooks ~= nil then
                 local functionName = moneyStackBP .. ":Initialize"
-                pcall(function() 
+                pcall(function()
                     UnregisterHook(functionName, stackBlueprints[bp.key].hooks.pre, stackBlueprints[bp.key].hooks.post)
                 end)
             end
@@ -256,7 +290,7 @@ local function changeStackSize(upgradeLevel)
             local moneyStackBP = bp.path
             if stackBlueprints[bp.key].hooks ~= nil then
                 local functionName = moneyStackBP .. ":Initialize"
-                pcall(function() 
+                pcall(function()
                     UnregisterHook(functionName, stackBlueprints[bp.key].hooks.pre, stackBlueprints[bp.key].hooks.post)
                 end)
             end
