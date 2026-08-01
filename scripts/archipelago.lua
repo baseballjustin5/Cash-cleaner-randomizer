@@ -37,6 +37,9 @@ function Archipelago:ReadConfig()
     local ok, data = pcall(dofile, self.CONFIG_PATH)
     if ok and type(data) == "table" then
         self.host = data.host
+        if self.host == "" then
+            self.host = "localhost:38281"
+        end
         self.slot = data.player
         self.password = data.password
         if data.seed then
