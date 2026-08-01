@@ -6,7 +6,7 @@ local AP = require "lua-apclientpp"
 local Utils = require "utils"
 
 -- global to this mod
-local game_name = "Cash cleaner simulator"
+local game_name = "Cash Cleaner Simulator"
 local items_handling = 7  -- full remote
 local client_version = {0, 5, 1}  -- optional, defaults to lib version
 local message_format = AP.RenderFormat.TEXT
