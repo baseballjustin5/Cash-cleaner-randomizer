@@ -164,7 +164,6 @@ function MarketLogic:SpyMarketOrder()
                 break
             end
             -- Do Stuff
-            i = i + 1
         end
 
     end, true)
