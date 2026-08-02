@@ -58,15 +58,15 @@ ExecuteInGameThread(function()
             Save = Save,
             MarketLogic = MarketLogic
         })
-        Save:LoadSave()
-
-        QuestLogic:Start()
-        WorldInteraction:ListenAllEvents()
-
-        Archipelago:ConnectToAp()
+       Archipelago:ConnectToAp()
 
         Utils.OnWakeUp(function()
+            Save:LoadSave()
             WorldInteraction:AlterInitConsumables()
+            QuestLogic:Start()
+            WorldInteraction:ListenAllEvents()
+
+
         end)
     end)
 

@@ -50,7 +50,7 @@ end
 
 function Archipelago:Connect(server, slot, password)
     local on_socket_connected = function()
-        print("[Archipelago] Socket connected" .. "\n")
+        print("[Archipelago] Socket connected\n")
     end
 
     local on_socket_error = function(msg)
@@ -58,32 +58,20 @@ function Archipelago:Connect(server, slot, password)
     end
 
     local on_socket_disconnected = function()
-        print("[Archipelago] Socket disconnected" .. "\n")
-        Utils.Notify("[Archipelago] Disconnected from server" .. "\n")
+        print("[Archipelago] Socket disconnected\n")
+        Utils.Notify("[Archipelago] Disconnected from server\n")
     end
 
     local on_room_info = function()
-        print("[Archipelago] Room info" .. "\n")
+        print("[Archipelago] Room info\n")
         ap:ConnectSlot(slot, password, items_handling, {"Lua-APClientPP"}, client_version)
     end
 
     local on_slot_connected = function(slot_data)
-        print("[Archipelago] Slot connected" .. "\n")
+        print("[Archipelago] Slot connected\n")
         playerId = ap:get_player_number()
         ap:ConnectUpdate(nil, {"Lua-APClientPP"})
-        Utils.Notify("[Archipelago] Connected to server")
-
-        if Archipelago.pendingChecks and #Archipelago.pendingChecks > 0 then
-            print("[Archipelago] Flushing pending location checks" .. "\n")
-            for _, locationName in ipairs(Archipelago.pendingChecks) do
-                local locationID = self:GetAPLocationIDfromName(locationName)
-                if locationID then
-                    print("[Archipelago] Sending pending location check for: " .. tostring(locationName) .. "\n")
-                    ap:LocationChecks({tonumber(locationID)})
-                end
-            end
-            Archipelago.pendingChecks = {}
-        end
+        Utils.Notify("[Archipelago] Connected to server\n")
     end
 
     local on_slot_refused = function(reasons)
@@ -115,19 +103,19 @@ function Archipelago:Connect(server, slot, password)
     end
 
     local on_location_checked = function(locations)
-        print("[Archipelago] Calling location checked" .. "\n")
+        print("[Archipelago] Calling location checked\n")
     end
 
     local on_data_package_changed = function(data_package)
-        print("[Archipelago] Data package changed" .. "\n")
+        print("[Archipelago] Data package changed\n")
     end
 
     local on_print = function(msg)
-        print("[Archipelago]" .. tostring(msg) .. "\n")
+        print("[Archipelago]" .. msg .. "\n")
     end
 
     local on_print_json = function(msg, extra)
-        print("[Archipelago] JSON Message:" .. "\n")
+        print("[Archipelago] JSON Message:")
         print(ap:render_json(msg, message_format) .. "\n")
     end
 
@@ -140,12 +128,12 @@ function Archipelago:Connect(server, slot, password)
     end
 
     local on_set_reply = function(message)
-        print("[Archipelago] Set Reply" .. "\n")
+        print("[Archipelago] Set Reply\n")
     end
 
     local uuid = ""
     ap = AP(uuid, game_name, server);
-    print("[Archipelago] Connecting to " .. server .. " ..." .. "\n")
+    print("[Archipelago] Connecting to " .. server .. " ...")
     ap:set_socket_connected_handler(on_socket_connected)
     ap:set_socket_error_handler(on_socket_error)
     ap:set_socket_disconnected_handler(on_socket_disconnected)
@@ -169,15 +157,6 @@ function Archipelago:ConnectToAp()
         LoopAsync(500, function()
             while ap do
                 ap:poll()
-
-                -- Flush any queued checks if we have pending items and a valid connection
-                if self.pendingChecks and #self.pendingChecks > 0 then
-                    for i = #self.pendingChecks, 1, -1 do
-                        local loc = self.pendingChecks[i]
-                        table.remove(self.pendingChecks, i)
-                        self:SendLocationFromName(loc)
-                    end
-                end
             end
         end)
     end)
@@ -193,7 +172,7 @@ function Archipelago:SendLocationFromName(locationName)
         self.pendingChecks = {}
     end
 
-    if not isConnected or ap == nil then
+    if playerID == 0 or ap == nil then
         print("AP client not connected, queueing location: " .. tostring(locationName) .. "\n")
         print("[Archipelago] Will try again when connected." .. "\n")
         table.insert(self.pendingChecks, locationName)
@@ -213,7 +192,7 @@ function Archipelago:SendLocationFromName(locationName)
         print("Error sending location with error: " .. tostring(err) .. "\n")
         table.insert(self.pendingChecks, locationName)
         for index, location in ipairs(self.pendingChecks) do
-            print(string.index .. ": " .. tostring(location))
+            print(index .. ": " .. tostring(location))
         end
     end
 end
