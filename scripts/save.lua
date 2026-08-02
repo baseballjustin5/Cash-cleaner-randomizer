@@ -108,9 +108,14 @@ function Save:LoadSave()
 
     if LoadedData.Archipelago then
         self.Archipelago:SetCheckedLocation(LoadedData.Archipelago.CheckedLocation)
+
+        -- Restore any pending offline checks so they can flush upon reconnect!
+        if LoadedData.Archipelago.PendingChecks then
+            self.Archipelago.pendingChecks = LoadedData.Archipelago.PendingChecks
+            print("[Archipelago] Restored pending checks = " .. #self.Archipelago.pendingChecks .. "\n")
+        end
     end
 end
-
 
 function Save:OnChange()
     local SaveData = {
