@@ -169,6 +169,15 @@ function Archipelago:ConnectToAp()
         LoopAsync(500, function()
             while ap do
                 ap:poll()
+
+                -- Flush any queued checks if we have pending items and a valid connection
+                if self.pendingChecks and #self.pendingChecks > 0 then
+                    for i = #self.pendingChecks, 1, -1 do
+                        local loc = self.pendingChecks[i]
+                        table.remove(self.pendingChecks, i)
+                        self:SendLocationFromName(loc)
+                    end
+                end
             end
         end)
     end)
