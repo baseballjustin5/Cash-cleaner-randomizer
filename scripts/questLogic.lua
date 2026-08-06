@@ -305,11 +305,11 @@ function QuestLogic:LogQuestRegistered()
         }
         local f, err = io.open(self.SAVE_PATH, "a")
         if not f then
-            return false
+            return
         end
         if err then
             print("Error opening file: " .. err)
-            return false
+            return
         end
 
         f:write(Utils.Serialize(questInfo))

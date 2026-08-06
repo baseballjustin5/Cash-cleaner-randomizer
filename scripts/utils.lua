@@ -128,4 +128,20 @@ function Utils.DelayedCall(callback, delay)
         callback = callback
     })
 end
+
+function Utils.WriteCrashLog(errMessage)
+    local path = "ue4ss/Mods/Randomizer/Saved/crash_debug.log"
+    local file, err = io.open(path, "w")
+    if file then
+        file:write("--- CASH CLEANER SIMULATOR CRASH LOG ---\n")
+        file:write("Time: " .. tostring(os.date()) .. "\n")
+        file:write("Error: " .. tostring(errMessage) .. "\n")
+        file:write("Stack Trace:\n" .. tostring(debug.traceback()) .. "\n")
+        file:close()
+        print("[Randomizer] Crash log successfully written to " .. path)
+    else
+        print("[Randomizer] Failed to write crash log: " .. tostring(err))
+    end
+end
+
 return Utils

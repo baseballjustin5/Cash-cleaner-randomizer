@@ -726,7 +726,7 @@ function FString:ToString() end
 ---Clears the string by setting the number of elements in the TArray to 0
 function FString:Clear() end
 
-
+---@class LocalObject
 ---@class FieldClass : LocalObject
 local FieldClass = {}
 

@@ -131,9 +131,9 @@ ValidationRules = {
     ["blocks-coins-usd0.10"] = true,
 
     ["rolls-coins-usd1.00"] = true,
+    ["rolls-coins-usd0.50"] = true,
     ["rolls-coins-usd0.25"] = true,
-    ["rolls-coins-eur0.50"] = true,
-    ["rolls-coins-eur0.20"] = true,
+    ["rolls-coins-usd0.10"] = true,
 
     ["coins-usd1.00"] = true,
     ["coins-usd0.50"] = true,

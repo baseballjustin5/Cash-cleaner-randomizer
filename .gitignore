@@ -1,1 +1,5 @@
 scripts/Self-Function_Test.lua
+
+# VS Code Editor Settings
+.vscode/
+!.vscode/settings.json

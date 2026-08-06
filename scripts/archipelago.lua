@@ -10,15 +10,15 @@ local game_name = "Cash Cleaner Simulator"
 local items_handling = 7  -- full remote
 local client_version = {0, 5, 1}  -- optional, defaults to lib version
 local message_format = AP.RenderFormat.TEXT
----@type APClient
-local ap = nil
 
+---@type APClient?
+local ap = nil
 
 -- TODO: user input
 Archipelago.host = ""
 Archipelago.slot = ""
 Archipelago.password = ""
-local playerId = 0
+local playerID = 0
 
 function Archipelago:Init(ctx)
     self.Reward = ctx.Reward
@@ -32,6 +32,10 @@ function Archipelago:SetCheckedLocation(locations)
     self.CheckedLocation = locations
 end
 
+function Archipelago:SetPendingChecks(pendingChecks)
+    self.pendingChecks = pendingChecks
+end
+
 Archipelago.CONFIG_PATH = "ue4ss/Mods/Randomizer/Saved/ap_config.lua"
 function Archipelago:ReadConfig()
     local ok, data = pcall(dofile, self.CONFIG_PATH)
@@ -43,7 +47,13 @@ function Archipelago:ReadConfig()
         self.slot = data.player
         self.password = data.password
         if data.seed then
-            self.MarketLogic:SetMarketSeed(math.tointeger(math.fmod(data.seed, math.maxinteger)))
+            self.MarketLogic:SetMarketSeed(
+                math.tointeger(
+                    math.fmod(
+                        data.seed, math.maxinteger
+                    )
+                )
+            )
         end
     end
 end
@@ -64,37 +74,128 @@ function Archipelago:Connect(server, slot, password)
 
     local on_room_info = function()
         print("[Archipelago] Room info\n")
-        ap:ConnectSlot(slot, password, items_handling, {"Lua-APClientPP"}, client_version)
+        if ap ~= nil then
+            ap:ConnectSlot(
+                slot,
+                password,
+                items_handling,
+                {"Lua-APClientPP"},
+                client_version
+            )
+        end
     end
 
     local on_slot_connected = function(slot_data)
-        print("[Archipelago] Slot connected\n")
-        playerId = ap:get_player_number()
-        ap:ConnectUpdate(nil, {"Lua-APClientPP"})
-        Utils.Notify("[Archipelago] Connected to server\n")
+        print("[Archipelago] Slot connected")
+        if ap ~= nil then
+            playerID = ap:get_player_number()
+            ap:ConnectUpdate(nil, {"Lua-APClientPP"})
+        end
+        Utils.Notify("[Archipelago] Connected to server")
+
+            local success, err = pcall(
+                function()
+                    if self.pendingChecks and
+                    type(self.pendingChecks) == "table" and
+                    #self.pendingChecks > 0 then
+                        print(
+                            "[Archipelago] Pushing " ..
+                            #self.pendingChecks ..
+                            "checks to server\n"
+                        )
+                        local sendingChecks = {}
+                        for _, locName in ipairs(self.pendingChecks) do
+                            if locName and not
+                            self.CheckedLocation[locName] then
+                                local locId = self:GetAPLocationIDfromName(locName)
+                                if locId ~= nil then
+                                    table.insert(sendingChecks, tonumber(locId))
+                                else
+                                    print(
+                                        "[Archipelago] WARNING: Could not resolve ID for queued location: " ..
+                                         tostring(locName) .. "\n"
+                                    )
+                                end
+                            end
+                        end
+                        if #sendingChecks > 0 and
+                        ap ~= nil then
+                            ap:LocationChecks(sendingChecks)
+                        end
+                        self.pendingChecks = {}
+                    else
+                        print(
+                            "([Archipelago] No pending checks to flush\n"
+                        )
+                    end
+            end)
+
+            if not success then
+                Utils.WriteCrashLog(err)
+                print(
+                    "[Archipelago] Error syncing checks with server: " ..
+                    tostring(err) .. "\n"
+                )
+            end
+
     end
 
     local on_slot_refused = function(reasons)
-        print("[Archipelago] Slot refused: " .. table.concat(reasons, ", ") .. "\n")
-        Utils.Notify("[Archipelago] Slot refused: " .. table.concat(reasons, ", "))
+        print(
+            "[Archipelago] Slot refused: " ..
+            table.concat(reasons, ", ") .. "\n"
+        )
+        Utils.Notify(
+            "[Archipelago] Slot refused: " ..
+            table.concat(reasons, ", ") .. "\n"
+        )
     end
 
     local on_items_received = function(items)
-        for _, item in ipairs(items) do
-            local location
-            local player = nil
+        local success, err = pcall(function()
+            for _, item in ipairs(items) do
+                if item and item.item and item.location then
+                    local location
+                    local player = nil
 
-            if item.player == playerId then
-                location = ArchipelagoLists.APLocationIdToName[item.location]
-            else
-                location = item.player .. "-" .. item.location
-                player = ap:get_player_alias(item.player)
+                    if item.player == playerID then
+                        location = ArchipelagoLists.APLocationIdToName[
+                            item.location
+                            ]
+                    else
+                        location = tostring(item.player) ..
+                        "-" .. tostring(item.location)
+                        if ap ~= nil then
+                            player = ap:get_player_alias(item.player) 
+                        end
+                    end
+                    if location and not self.CheckedLocation[location] then
+                        local reward = ArchipelagoLists.APItemIdToName[
+                            item.item
+                            ]
+                        ExecuteInGameThread(
+                            function()
+                                self.Reward:Award(reward, location, player)
+                            end
+                        )
+
+                        self.CheckedLocation[location] = true
+                        print(
+                            "[Archipelago] Received item: " ..
+                            " from location: " .. tostring(location) ..
+                            " for player: " .. tostring(player) ..
+                            " with reward: " .. tostring(reward) .. "\n"
+                        )
+                    end
+                end
             end
-            if not self.CheckedLocation[location] then
-                local reward = ArchipelagoLists.APItemIdToName[item.item]
-                self.Reward:Award(reward, location, player)
-                self.CheckedLocation[location] = true
-            end
+        end)
+        if not success then
+            Utils.WriteCrashLog(err)
+            print(
+                "[Archipelago] Error handling received items with error: " ..
+                tostring(err) .. "\n"
+            )
         end
     end
 
@@ -102,8 +203,24 @@ function Archipelago:Connect(server, slot, password)
         print("[Archipelago] Locations scouted" .. "\n")
     end
 
-    local on_location_checked = function(locations)
-        print("[Archipelago] Calling location checked\n")
+local on_location_checked = function(locations)
+        -- 'locations' passed from APClient contains an array of numeric IDs already checked on server
+        local success, err = pcall(function()
+            if locations and type(locations) == "table" then
+                for _, locId in ipairs(locations) do
+                    local locName = ArchipelagoLists.APLocationIdToName[locId]
+                    if locName then
+                        self.CheckedLocation[locName] = true
+                    end
+                end
+            end
+            print("[Archipelago] Location checked packet processed successfully\n")
+        end)
+
+        if not success then
+            print("[Archipelago] Error in on_location_checked: " .. tostring(err) .. "\n")
+            Utils.WriteCrashLog(err)
+        end
     end
 
     local on_data_package_changed = function(data_package)
@@ -116,7 +233,9 @@ function Archipelago:Connect(server, slot, password)
 
     local on_print_json = function(msg, extra)
         print("[Archipelago] JSON Message:")
-        print(ap:render_json(msg, message_format) .. "\n")
+        if ap ~= nil then
+            print(ap:render_json(msg, message_format) .. "\n")
+        end
     end
 
     local on_bounced = function(bounce)
@@ -155,9 +274,24 @@ function Archipelago:ConnectToAp()
     ExecuteAsync(function ()
         self:Connect(self.host, self.slot, self.password)
         LoopAsync(500, function()
-            while ap do
-                ap:poll()
+            if self.isDisconnected then
+                return false -- Returning false stops UE4SS LoopAsync
             end
+            local success, err = pcall(function()
+                if ap ~= nil then
+                    ap:poll()
+                end
+            end)
+            if not success then
+                print(
+                    "[Archipelago] Error polling AP client with error: " ..
+                    tostring(err) .. "\n"
+                )
+                if err and not string.match(tostring(err), "not connected") then
+                    Utils.WriteCrashLog(err)
+                end
+            end
+            return true
         end)
     end)
 end
@@ -172,28 +306,45 @@ function Archipelago:SendLocationFromName(locationName)
         self.pendingChecks = {}
     end
 
-    if playerID == 0 or ap == nil then
-        print("AP client not connected, queueing location: " .. tostring(locationName) .. "\n")
-        print("[Archipelago] Will try again when connected." .. "\n")
+    print("[Archipelago] SendLocationFromName triggered for: " .. tostring(locationName) .. "\n")
+
+    if locationName == nil or type(locationName) ~= "string" then
+        print("[Archipelago] ERROR: Location name is nil or not a string.\n")
+        return
+    end
+
+    if playerID == 0 or ap == nil or type(ap) ~= "userdata" then
+        print("[Archipelago] AP client not connected. Queueing location: " .. tostring(locationName) .. "\n")
         table.insert(self.pendingChecks, locationName)
         return
     end
 
     local locationID = self:GetAPLocationIDfromName(locationName)
     if locationID == nil then
-        print("Location name: " .. locationName .. " is not valid." .. "\n")
+        print("[Archipelago] ERROR: Could not find AP Location ID for name: " .. tostring(locationName) .. "\n")
         return
     end
 
+    print("[Archipelago] Resolved location ID: " .. tostring(locationID) .. " -> Converting to number...\n")
+    local numericID = tonumber(locationID)
+    if numericID == nil then
+        print("[Archipelago] ERROR: Failed to convert location ID to a number.\n")
+        return
+    end
+
+    print("[Archipelago] Attempting to call ap:LocationChecks with ID: " .. tostring(numericID) .. "\n")
+
     local success, err = pcall(function()
-        ap:LocationChecks({tonumber(locationID)})
+        local queued = ap:LocationChecks({numericID})
+        return queued
     end)
+
     if not success then
-        print("Error sending location with error: " .. tostring(err) .. "\n")
+        print("[Archipelago] CRITICAL: ap:LocationChecks threw an error: " .. tostring(err) .. "\n")
+        Utils.WriteCrashLog(err)
         table.insert(self.pendingChecks, locationName)
-        for index, location in ipairs(self.pendingChecks) do
-            print(index .. ": " .. tostring(location))
-        end
+    else
+        print("[Archipelago] SUCCESS: Location check successfully transmitted to server!\n")
     end
 end
 
@@ -207,7 +358,12 @@ function Archipelago:Goal()
 end
 
 function Archipelago:GetAPLocationIDfromName(locationName)
-    return ArchipelagoLists.LocationNameToAPId[locationName]
+    local id = ArchipelagoLists.LocationNameToAPId[locationName]
+    if id ~= nil then
+        return id
+    else
+        return nil
+    end
 end
 
 return Archipelago

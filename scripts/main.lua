@@ -1,12 +1,12 @@
-local StackSize = require "stackSize"
 local Utils = require "utils"
+local StackSize = require "stackSize"
 local QuestLogic = require "questLogic"
 local MarketLogic = require "marketLogic"
 local WorldInteraction = require "worldInteraction"
 local Reward = require "reward"
+local Archipelago = require "archipelago"
 local Save = require "save"
 local AP = require "lua-apclientpp"
-local Archipelago = require "archipelago"
 
 local mainGameMode = "/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C"
 
@@ -19,56 +19,57 @@ ExecuteInGameThread(function()
         if mainGameModeInstance == nil or not mainGameModeInstance:IsValid() then
             return
         end
-        Utils.InitTickCallback()
-        Reward:Init({
-            QuestLogic = QuestLogic,
-            Save = Save,
-            WorldInteraction = WorldInteraction,
-            MarketLogic = MarketLogic,
+
+		print("[Randomizer] World State Loaded! Initializing modules...\n")
+
+		local ctx = {
             StackSize = StackSize,
-            Archipelago = Archipelago
-        })
-        Save:Init({
-            QuestLogic = QuestLogic,
+			QuestLogic = QuestLogic,
+			MarketLogic = MarketLogic,
             WorldInteraction = WorldInteraction,
-            MarketLogic = MarketLogic,
-            StackSize = StackSize,
             Reward = Reward,
-            Archipelago = Archipelago
-        })
-        QuestLogic:Init({
-            Save = Save,
-            Reward = Reward,
-            MarketLogic = MarketLogic
-        })
-        WorldInteraction:Init({
-            Save = Save,
-            Reward = Reward
-        })
-        MarketLogic:Init({
-            Save = Save,
-            Reward = Reward
-        })
-        StackSize:Init({
-            Save = Save,
-            MarketLogic = MarketLogic
-        })
-        Archipelago:Init({
-            Reward = Reward,
-            Save = Save,
-            MarketLogic = MarketLogic
-        })
-       Archipelago:ConnectToAp()
+            Archipelago = Archipelago,
+			Save = Save,
+		}
 
-        Utils.OnWakeUp(function()
-            Save:LoadSave()
-            WorldInteraction:AlterInitConsumables()
-            QuestLogic:Start()
-            WorldInteraction:ListenAllEvents()
+		Save:Init(ctx)
+		Reward:Init(ctx)
+		QuestLogic:Init(ctx)
+		WorldInteraction:Init(ctx)
+		MarketLogic:Init(ctx)
+		StackSize:Init(ctx)
+		Archipelago:Init(ctx)
 
+		Utils.InitTickCallback()
+		
+		local success, err = pcall(
+			function()
+				Save:LoadSave()
+				WorldInteraction:AlterInitConsumables()
 
+				if QuestLogic.Start then 
+					QuestLogic:Start()
+				else
+					print("QuestLogic:Start() missing")
+				end
+				if WorldInteraction.ListenAllEvents then
+					WorldInteraction:ListenAllEvents()
+				else
+					print("WorldInteraction:ListenAllEvents() missing")
+				end
+				
+				print(
+					"[Archipelago] Starting Background Connection to server"
+				)
+				Archipelago:ConnectToAp()       
         end)
+
+		if not success then
+			
+			print(
+				"[Randomizer] Failed to Initialize with error: " ..
+				tostring(err) .. "\n"
+			)
+		end
     end)
-
-
 end)

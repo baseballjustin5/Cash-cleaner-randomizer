@@ -60,7 +60,7 @@ function Save:Default()
         },
         Archipelago = {
             CheckedLocation = self.Archipelago.CheckedLocation,
-            PendingChecks = self.Archipelago.pendingChecks
+            PendingChecks = self.Archipelago.PendingChecks
         }
     }
 end
@@ -70,10 +70,10 @@ function Save:ReadSave()
     if ok and type(data) == "table" then
         print("[Randomizer] Save data loaded\n")
         return data
-    end
-
-    print("[Randomizer] Creating new save data\n")
-    return self:Default()
+	else
+		print("[Randomizer] Creating new save data\n")
+		return self:Default()
+	end
 end
 
 function Save:LoadSave()
@@ -85,7 +85,8 @@ function Save:LoadSave()
 
     if LoadedData.StackSize then
         self.StackSize:LoadLevelUpStatus(LoadedData.StackSize.CurrentUpgradeLevel)
-    end
+		self.StackSize:LoadLevelUpStatus(targetLevel)
+	end
 
     if LoadedData.QuestLogic then
         self.QuestLogic:SetCompletedSideQuest(LoadedData.QuestLogic.CompletedSideQuests)
@@ -108,12 +109,7 @@ function Save:LoadSave()
 
     if LoadedData.Archipelago then
         self.Archipelago:SetCheckedLocation(LoadedData.Archipelago.CheckedLocation)
-
-        -- Restore any pending offline checks so they can flush upon reconnect!
-        if LoadedData.Archipelago.PendingChecks then
-            self.Archipelago.pendingChecks = LoadedData.Archipelago.PendingChecks
-            print("[Archipelago] Restored pending checks = " .. #self.Archipelago.pendingChecks .. "\n")
-        end
+        self.Archipelago:SetPendingChecks(LoadedData.Archipelago.PendingChecks)
     end
 end
 
@@ -145,7 +141,7 @@ function Save:OnChange()
         },
         Archipelago = {
             CheckedLocation = self.Archipelago.CheckedLocation,
-            PendingChecks = self.Archipelago.pendingChecks
+            PendingChecks = self.Archipelago.PendingChecks
         }
     }
 
