@@ -98,7 +98,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
         self.MarketLogic:LoopProducts(function(product)
             print("[Randomizer] Loading all market products ", tostring(product), "\n")
         end)
-        
+
         Utils.DelayedCall(function()
             ExecuteInGameThread(function()
                 local config = {
@@ -124,7 +124,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
                     end
 
                     LoadAsset(moneyCounterBP)
-                    
+
                     local mainPre, mainPost = RegisterHook(
                         moneyCounterBP .. ":Initialize", function(_self)
                         local counter = _self:get()
@@ -207,7 +207,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
             end)
         end, 250)
     end)
-    
+
     Utils.OnQuit(function()
         for _, bp in pairs(counterBlueprints) do
             local moneyCounterBP = bp.path
@@ -274,7 +274,7 @@ local function changeStackSize(upgradeLevel)
             stackBlueprints[bp.key].hooks = { pre = pre, post = post }
         end
     end)
-    
+
     Utils.OnQuit(function()
          for _, bp in pairs(stackBlueprints) do
             local moneyStackBP = bp.path

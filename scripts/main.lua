@@ -20,56 +20,56 @@ ExecuteInGameThread(function()
             return
         end
 
-		print("[Randomizer] World State Loaded! Initializing modules...\n")
+        print("[Randomizer] World State Loaded! Initializing modules...\n")
 
-		local ctx = {
+        local ctx = {
             StackSize = StackSize,
-			QuestLogic = QuestLogic,
-			MarketLogic = MarketLogic,
+            QuestLogic = QuestLogic,
+            MarketLogic = MarketLogic,
             WorldInteraction = WorldInteraction,
             Reward = Reward,
             Archipelago = Archipelago,
-			Save = Save,
-		}
+            Save = Save,
+        }
 
-		Save:Init(ctx)
-		Reward:Init(ctx)
-		QuestLogic:Init(ctx)
-		WorldInteraction:Init(ctx)
-		MarketLogic:Init(ctx)
-		StackSize:Init(ctx)
-		Archipelago:Init(ctx)
+        Save:Init(ctx)
+        Reward:Init(ctx)
+        QuestLogic:Init(ctx)
+        WorldInteraction:Init(ctx)
+        MarketLogic:Init(ctx)
+        StackSize:Init(ctx)
+        Archipelago:Init(ctx)
 
-		Utils.InitTickCallback()
-		
-		local success, err = pcall(
-			function()
-				Save:LoadSave()
-				WorldInteraction:AlterInitConsumables()
+        Utils.InitTickCallback()
 
-				if QuestLogic.Start then 
-					QuestLogic:Start()
-				else
-					print("QuestLogic:Start() missing")
-				end
-				if WorldInteraction.ListenAllEvents then
-					WorldInteraction:ListenAllEvents()
-				else
-					print("WorldInteraction:ListenAllEvents() missing")
-				end
-				
-				print(
-					"[Archipelago] Starting Background Connection to server"
-				)
-				Archipelago:ConnectToAp()       
+        local success, err = pcall(
+            function()
+                Save:LoadSave()
+                WorldInteraction:AlterInitConsumables()
+
+                if QuestLogic.Start then
+                    QuestLogic:Start()
+                else
+                    print("QuestLogic:Start() missing")
+                end
+                if WorldInteraction.ListenAllEvents then
+                    WorldInteraction:ListenAllEvents()
+                else
+                    print("WorldInteraction:ListenAllEvents() missing")
+                end
+
+                print(
+                    "[Archipelago] Starting Background Connection to server"
+                )
+                Archipelago:ConnectToAp()
         end)
 
-		if not success then
-			
-			print(
-				"[Randomizer] Failed to Initialize with error: " ..
-				tostring(err) .. "\n"
-			)
-		end
+        if not success then
+
+            print(
+                "[Randomizer] Failed to Initialize with error: " ..
+                tostring(err) .. "\n"
+            )
+        end
     end)
 end)

@@ -70,10 +70,10 @@ function Save:ReadSave()
     if ok and type(data) == "table" then
         print("[Randomizer] Save data loaded\n")
         return data
-	else
-		print("[Randomizer] Creating new save data\n")
-		return self:Default()
-	end
+    else
+        print("[Randomizer] Creating new save data\n")
+        return self:Default()
+    end
 end
 
 function Save:LoadSave()
@@ -85,8 +85,8 @@ function Save:LoadSave()
 
     if LoadedData.StackSize then
         self.StackSize:LoadLevelUpStatus(LoadedData.StackSize.CurrentUpgradeLevel)
-		self.StackSize:LoadLevelUpStatus(targetLevel)
-	end
+        self.StackSize:LoadLevelUpStatus(targetLevel)
+    end
 
     if LoadedData.QuestLogic then
         self.QuestLogic:SetCompletedSideQuest(LoadedData.QuestLogic.CompletedSideQuests)
