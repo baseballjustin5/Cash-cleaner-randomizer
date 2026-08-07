@@ -38,7 +38,7 @@ function StackSize:Init(ctx)
 end
 
 local function counterConfig(incomingFactor, upgradeLevel)
-    local currentConfig = sizeUpgrade[upgradeLevel]
+    local currentConfig = sizeUpgrade[upgradeLevel or 0] or sizeUpgrade[0]
     return {
         MaxIncomingBillsCount = currentConfig.stackSize * incomingFactor,
         MaxOutgoingBillsCount = currentConfig.stackSize,
@@ -251,6 +251,8 @@ local stackBlueprints = {
 
 local function changeStackSize(upgradeLevel)
     ExecuteInGameThread(function()
+        local safeLevel = upgradeLevel or 0
+        local currentUpgrade = sizeUpgrade[safeLevel] or sizeUpgrade[0]
         for _, bp in pairs(stackBlueprints) do
             local moneyStackBP = bp.path
             LoadAsset(moneyStackBP)
@@ -264,10 +266,10 @@ local function changeStackSize(upgradeLevel)
 
             local pre, post = RegisterHook(moneyStackBP .. ":Initialize", function(_self)
                 local pack = _self:get()
-                if pack then
+                if pack and pack:IsValid() then
                     local comp = pack.CompositionObject
-                    if comp then
-                        comp.MaxInnerStatesCount = sizeUpgrade[upgradeLevel].stackSize
+                    if comp and currentUpgrade then
+                        comp.MaxInnerStatesCount = currentUpgrade.stackSize
                     end
                 end
             end)

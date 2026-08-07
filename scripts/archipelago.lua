@@ -33,17 +33,26 @@ function Archipelago:SetCheckedLocation(locations)
 end
 
 function Archipelago:SetPendingChecks(pendingChecks)
-    self.pendingChecks = pendingChecks
+    self.PendingChecks = pendingChecks
 end
 
 Archipelago.CONFIG_PATH = "ue4ss/Mods/Randomizer/Saved/ap_config.lua"
 function Archipelago:ReadConfig()
     local ok, data = pcall(dofile, self.CONFIG_PATH)
     if ok and type(data) == "table" then
-        self.host = data.host
-        if self.host == "" then
-            self.host = "localhost:38281"
+        local rawHost = data.host
+        if not rawHost or rawHost == "" then
+            self.host = "ws://localhost:38281"
+        elseif string.match(rawHost, "^%a+://") then
+            -- If you explicitly wrote ws:// or wss:// in the config, use it directly!
+            self.host = rawHost
+        else
+            -- If you just provided an IP or domain without a prefix, default to plain ws://
+            -- (essential for home-hosted servers that don't use SSL/WSS certificates)
+            self.host = "ws://" .. rawHost
+            print(self.host)
         end
+
         self.slot = data.player
         self.password = data.password
         if data.seed then
@@ -64,7 +73,8 @@ function Archipelago:Connect(server, slot, password)
     end
 
     local on_socket_error = function(msg)
-       print("[Archipelago] Socket error: " .. msg .. "\n")
+        print("[Archipelago CRITICAL] Socket error encountered: " .. tostring(msg) .. "\n")
+        Utils.Notify("[Archipelago] Connection Failed: " .. tostring(msg))
     end
 
     local on_socket_disconnected = function()
@@ -93,16 +103,16 @@ function Archipelago:Connect(server, slot, password)
         end
         Utils.Notify("[Archipelago] Connected to server")
 
-        if not self.pendingChecks or type(self.pendingChecks) ~= "table" or #self.pendingChecks == 0 then
+        if not self.PendingChecks or type(self.PendingChecks) ~= "table" or #self.PendingChecks == 0 then
             print("[Archipelago] No pending checks to flush\n")
             return
         end
 
-        print("[Archipelago] Pushing " .. #self.pendingChecks .. " checks to server\n")
+        print("[Archipelago] Pushing " .. #self.PendingChecks .. " checks to server\n")
 
         local success, err = pcall(function()
             local sendingChecks = {}
-            for _, locName in ipairs(self.pendingChecks) do
+            for _, locName in ipairs(self.PendingChecks) do
                 if locName and not self.CheckedLocation[locName] then
                     local locId = self:GetAPLocationIDfromName(locName)
                     if locId == nil then
@@ -116,7 +126,7 @@ function Archipelago:Connect(server, slot, password)
             if #sendingChecks > 0 and ap ~= nil then
                 ap:LocationChecks(sendingChecks)
             end
-            self.pendingChecks = {}
+            self.PendingChecks = {}
         end)
 
         if not success then
@@ -184,7 +194,7 @@ function Archipelago:Connect(server, slot, password)
         print("[Archipelago] Locations scouted" .. "\n")
     end
 
-local on_location_checked = function(locations)
+    local on_location_checked = function(locations)
         -- 'locations' passed from APClient contains an array of numeric IDs already checked on server
         local success, err = pcall(function()
             if locations and type(locations) == "table" then
@@ -232,8 +242,9 @@ local on_location_checked = function(locations)
     end
 
     local uuid = ""
+    print("[Archipelago] Connecting to server ...")
     ap = AP(uuid, game_name, server);
-    print("[Archipelago] Connecting to " .. server .. " ...")
+    print("[Archipelago] AP client created, setting up handlers ...")
     ap:set_socket_connected_handler(on_socket_connected)
     ap:set_socket_error_handler(on_socket_error)
     ap:set_socket_disconnected_handler(on_socket_disconnected)
@@ -256,10 +267,12 @@ function Archipelago:ConnectToAp()
         self:Connect(self.host, self.slot, self.password)
         LoopAsync(500, function()
             if self.isDisconnected then
+                print("[Archipelago] Disconnected from server, stopping loop\n")
                 return false -- Returning false stops UE4SS LoopAsync
             end
             local success, err = pcall(function()
                 if ap ~= nil then
+                    print("connecting")
                     ap:poll()
                 end
             end)
@@ -283,8 +296,8 @@ function Archipelago:Disconnect()
 end
 
 function Archipelago:SendLocationFromName(locationName)
-    if type(self.pendingChecks) ~= "table" then
-        self.pendingChecks = {}
+    if type(self.PendingChecks) ~= "table" then
+        self.PendingChecks = {}
     end
 
     print("[Archipelago] SendLocationFromName triggered for: " .. tostring(locationName) .. "\n")
@@ -296,7 +309,7 @@ function Archipelago:SendLocationFromName(locationName)
 
     if playerID == 0 or ap == nil or type(ap) ~= "userdata" then
         print("[Archipelago] AP client not connected. Queueing location: " .. tostring(locationName) .. "\n")
-        table.insert(self.pendingChecks, locationName)
+        table.insert(self.PendingChecks, locationName)
         return
     end
 
@@ -323,7 +336,7 @@ function Archipelago:SendLocationFromName(locationName)
     if not success then
         print("[Archipelago] CRITICAL: ap:LocationChecks threw an error: " .. tostring(err) .. "\n")
         Utils.WriteCrashLog(err)
-        table.insert(self.pendingChecks, locationName)
+        table.insert(self.PendingChecks, locationName)
     else
         print("[Archipelago] SUCCESS: Location check successfully transmitted to server!\n")
     end

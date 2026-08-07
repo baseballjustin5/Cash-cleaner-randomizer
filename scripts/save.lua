@@ -38,7 +38,7 @@ function Save:Default()
             Interactions = self.WorldInteraction.Interactions,
         },
         StackSize = {
-            CurrentUpgradeLevel = self.StackSize.CurrentUpgradeLevel
+            CurrentUpgradeLevel = self.StackSize.CurrentUpgradeLevel,
         },
         QuestLogic = {
             CurrentUpgrades = self.QuestLogic.CurrentUpgrades,
@@ -49,18 +49,18 @@ function Save:Default()
             CompletedSideQuestsIds = self.QuestLogic.CompletedSideQuestsIds,
             CompletedMainQuestsNames = self.QuestLogic.CompletedMainQuestsNames,
             ForceOpenPneumaticTube = self.QuestLogic.ForceOpenPneumaticTube,
-            MaxDifficulty = self.QuestLogic.MaxDifficulty
+            MaxDifficulty = self.QuestLogic.MaxDifficulty,
         },
         MarketLogic = {
             Upgrades = self.MarketLogic.Upgrades,
-            PriceSeed = self.MarketLogic.PriceSeed
+            PriceSeed = self.MarketLogic.PriceSeed,
         },
         Reward = {
-            ExpectedReputation = self.Reward.ExpectedReputation
+            ExpectedReputation = self.Reward.ExpectedReputation,
         },
         Archipelago = {
             CheckedLocation = self.Archipelago.CheckedLocation,
-            PendingChecks = self.Archipelago.PendingChecks
+            PendingChecks = self.Archipelago.PendingChecks,
         }
     }
 end
@@ -120,7 +120,7 @@ function Save:OnChange()
             Interactions = self.WorldInteraction.Interactions,
         },
         StackSize = {
-            CurrentUpgradeLevel = self.StackSize.CurrentUpgradeLevel
+            CurrentUpgradeLevel = self.StackSize.CurrentUpgradeLevel,
         },
         QuestLogic = {
             CurrentUpgrades = self.QuestLogic.CurrentUpgrades,
@@ -130,18 +130,18 @@ function Save:OnChange()
             CompletedSideQuestsIds = self.QuestLogic.CompletedSideQuestsIds,
             CompletedMainQuestsNames = self.QuestLogic.CompletedMainQuestsNames,
             ForceOpenPneumaticTube = self.QuestLogic.ForceOpenPneumaticTube,
-            MaxDifficulty = self.QuestLogic.MaxDifficulty
+            MaxDifficulty = self.QuestLogic.MaxDifficulty,
         },
         MarketLogic = {
             Upgrades = self.MarketLogic.Upgrades,
-            PriceSeed = self.MarketLogic.PriceSeed
+            PriceSeed = self.MarketLogic.PriceSeed,
         },
         Reward = {
-            ExpectedReputation = self.Reward.ExpectedReputation
+            ExpectedReputation = self.Reward.ExpectedReputation,
         },
         Archipelago = {
             CheckedLocation = self.Archipelago.CheckedLocation,
-            PendingChecks = self.Archipelago.PendingChecks
+            PendingChecks = self.Archipelago.PendingChecks,
         }
     }
 

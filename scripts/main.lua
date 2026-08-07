@@ -23,13 +23,13 @@ ExecuteInGameThread(function()
         print("[Randomizer] World State Loaded! Initializing modules...\n")
 
         local ctx = {
+            Save = Save,
             StackSize = StackSize,
             QuestLogic = QuestLogic,
             MarketLogic = MarketLogic,
             WorldInteraction = WorldInteraction,
             Reward = Reward,
             Archipelago = Archipelago,
-            Save = Save,
         }
 
         Save:Init(ctx)
