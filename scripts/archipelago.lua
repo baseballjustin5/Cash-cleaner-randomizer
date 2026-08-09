@@ -85,13 +85,13 @@ function Archipelago:Connect(server, slot, password)
     local on_room_info = function()
         print("[Archipelago] Room info\n")
         if ap ~= nil then
-            ap:ConnectSlot(
+            print(ap:ConnectSlot(
                 slot,
                 password,
                 items_handling,
                 {"Lua-APClientPP"},
                 client_version
-            )
+            ))
         end
     end
 
@@ -243,6 +243,7 @@ function Archipelago:Connect(server, slot, password)
 
     local uuid = ""
     print("[Archipelago] Connecting to server ...")
+    print("UUID: " .. uuid .. " Game Name: " .. game_name .. " Server: " .. server)
     ap = AP(uuid, game_name, server);
     print("[Archipelago] AP client created, setting up handlers ...")
     ap:set_socket_connected_handler(on_socket_connected)
@@ -266,15 +267,24 @@ function Archipelago:ConnectToAp()
     ExecuteAsync(function ()
         self:Connect(self.host, self.slot, self.password)
         LoopAsync(500, function()
-            if self.isDisconnected then
-                print("[Archipelago] Disconnected from server, stopping loop\n")
-                return false -- Returning false stops UE4SS LoopAsync
-            end
             local success, err = pcall(function()
-                if ap ~= nil then
-                    print("connecting")
-                    ap:poll()
-                end
+                    if ap ~= nil then
+                        print("connecting")
+                        local poll_success, poll_err = pcall(
+                            function()
+                                ap:poll()
+                            end)
+                        if not poll_success then
+                            print(
+                                "[Archipelago] Error polling AP client with error: " ..
+                                tostring(poll_err) .. "\n"
+                            )
+                            return false
+                        end
+                    else
+                        print("[Archipelago] AP client reference is nil, cannot poll.\n")
+                        return false
+                    end
             end)
             if not success then
                 print(
@@ -290,6 +300,18 @@ function Archipelago:ConnectToAp()
     end)
 end
 
+
+--
+--         if not success then
+--             print("[Archipelago] Socket failed with error: " .. tostring(err))
+--             return false
+--         end
+--     else
+--         print("[Archipelago] Socket failed: AP client reference is nil.")
+--         return false
+--     end
+--     return true
+-- end)
 function Archipelago:Disconnect()
     ap = nil
     collectgarbage("collect")
