@@ -229,7 +229,9 @@ function Archipelago:Connect(server, slot, password)
         print("[Archipelago] Set Reply\n")
     end
 
-    local uuid = tostring(slot) .. "_" .. tostring(self.seed)
+    local seedStr = string.format("%.0f", tonumber(self.seed) or 0)
+    local uuid = tostring(slot) .. "_" .. seedStr
+
     print("UUID: " .. uuid .. " Game Name: " .. game_name .. " Server: " .. server .. "\n")
     local success, err = pcall(
         function()
@@ -259,32 +261,47 @@ function Archipelago:Connect(server, slot, password)
 end
 
 function Archipelago:ConnectToAp()
-    ExecuteAsync(function ()
-        self:Connect(self.host, self.slot, self.password)
-        
-        -- Primary polling loop (runs every 250ms (4 times per second)))
-        LoopAsync(250, function()
-            if ap ~= nil then
-                ap:poll()
-            end
-            return true
-        end)
+    -- Guard against double initialization calls during boot
+    if ap ~= nil then
+        print("[Archipelago] Connection already active or initialized, skipping duplicate call.")
+        return
+    end
 
-        -- Auto-retry to reconnect (runs every 30 seconds)
-        LoopAsync(30000, function()
-            if ap == nil then
-                print("[Archipelago] Connection dropped. Attempting to reconnect...")
-                Utils.Notify("[Archipelago] Reconnecting...")
-                pcall(function()
-                    self:Connect(self.host, self.slot, self.password)
-                end)
-            end
-            return true
-        end)
+    print("[Archipelago] Starting Background Connection to server")
+    
+    -- Initialize connection in a background thread
+    ExecuteAsync(function()
+        self:Connect(self.host, self.slot, self.password)
+    end)
+    
+    -- Primary polling loop (runs every 250ms)
+    LoopAsync(250, function()
+        if ap ~= nil then
+            ap:poll()
+        end
+        return true
+    end)
+
+    -- Auto-retry to reconnect (runs every 30 seconds)
+    LoopAsync(30000, function()
+        if ap == nil then
+            print("[Archipelago] Connection dropped. Attempting to reconnect...")
+            Utils.Notify("[Archipelago] Reconnecting...")
+            self:Disconnect()
+            ExecuteAsync(function()
+                self:Connect(self.host, self.slot, self.password)
+            end)
+        end
+        return true
     end)
 end
 
 function Archipelago:Disconnect()
+    if ap ~= nil then
+        pcall(function ()
+            ap:reset()         
+        end)
+    end
     ap = nil
     collectgarbage("collect")
 end
