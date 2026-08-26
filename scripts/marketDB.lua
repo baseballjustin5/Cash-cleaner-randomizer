@@ -815,3 +815,132 @@ local blueprints = {
 }
 
 return blueprints
+
+--[[ 
+All Purchases
+
+Bill strap
+Money Tape
+Cling Plastic wrap
+Cling Wrap (workbench)
+Coin Paper
+Ink & Grime Sponge (workbench)
+Cardboard Box S
+Cardboard Box M
+Bill Strap Box
+Base Label Tape Set
+Shape Label Tape Set
+Numeral & Currency Tape Set
+Logistic Symbol Tape set
+Backpack
+Cardboard Box L
+Ink Cleaner Foam Sprayer
+Utility Emoji Tape Set
+Emoji Tape Set
+Shine Foil Set
+Dual Reality Glow Set
+Cash Cleaner Simulator Set
+Classic Sports Bag
+Cardboard Box XXL
+Cubic Gift Box
+Cling Plastic Wrap Box
+Coin Paper Box
+Wooden Shipping Crate
+Wooden Pallet
+Plastic Pallet
+Stylish Steel Knife
+Goo Dissolver Foam Sprayer (workbench)
+Midas Fang
+Sugarblade
+CD's Nuts
+Barrel L
+Flat Gift Box
+Armchair
+Plastic Bucket
+Label Remover
+Suitcase
+Spring Matress
+Case
+Vintage Leather Case
+Old Wireless Speaker
+Helix Floor Lamp
+Quick Grab Rack S
+Mark Remover Foam Sprayer (workbench)
+Barrel XXL
+Art Compendium
+Marked Money Collection
+Coin Compendium
+Order Screen
+Art Combendium: British Tour
+World Banknote Compendium (need to add to checks)
+Dumpster Aloe
+Dumpster Echeveria
+Professional Gaming Mouse
+Steel Work Table
+Money Gun
+Daily Load Rack M
+Bitter Run Travelbag
+Ink Cleaner Liquid detergent
+Aluminum Case
+Rotating Display Turntable
+Royal Feeding Bowl
+Dreamy Cat Bed
+Table
+DRAWEN 2x2
+Luxury Genuine Leather Premium Bag
+Aluminum Lightweight Ladder
+Mocha Haul Travelbag
+Heavy Stash Rack L
+Teddy Bear Backpack
+DRAWEN 3x3
+Goo Dissolver Liquid
+Extra Large Sofa
+Velvet Beats Speaker
+Daydream Speaker
+GrooveBlaster Speaker
+Ather Speaker
+Cash Splash Ball
+The Autopay
+Label Gun
+Street Trophy
+Need for Fresh
+Betty in Bloom
+Stability Controller
+Endless Night Chase
+Portable UV Lamp
+LootVac Multi-Cleaner
+Money Counter
+Mark Remover Liquid Detergent
+Marked Bills Sorter
+Disco Duck
+Shopping Counter L
+Money Counter L
+Money Counter Euro L
+Money Counter Yen L
+Money Counter Pounds L
+Washing Machine (washer)
+Custom Dryer
+Goldrush Washer (washer)
+Pink Moochine (washer)
+Clean Sound System (washer)
+Platform Trolley
+Coin Sorter
+Cash Drop Lamp
+Stationary UV Lamp
+Ball Pit Chair
+Movable Chute
+Lift Platform
+Sigma David
+Money Counter XXL
+Can I haz money?
+Industrial Washing Machine
+Back Alley Sofa
+Money Talks Table
+Face Value Poster
+Pain(t)
+Money Makes Noise
+Rendered in Oil
+High-Quality Zoom Magnifier (workbench)
+Fine-Edge Knife (workbench)
+Ultraviolet Inspection Lamp (workbench) 
+]]
