@@ -9,7 +9,7 @@ local Utils = require "utils"
 -- global to this mod
 local game_name = "Cash Cleaner Simulator"
 local items_handling = 7  -- full remote
-local client_version = {0, 6, 7}  -- optional, defaults to lib version
+local client_version = {0, 6, 4}  -- optional, defaults to lib version
 local message_format = AP.RenderFormat.TEXT
 
 ---@type APClient?
@@ -237,6 +237,8 @@ function Archipelago:Connect(server, slot, password)
         function()
             ap = AP(uuid, game_name, server);
     end)
+
+    print("apcalled")
     if not success or ap == nil then
         print("[Archipelago] Failed to initialize AP client: " .. tostring(err) .. "\n")
         Utils.Notify("[Randomizer] Connection failed. Check your server address\n")
@@ -271,13 +273,22 @@ function Archipelago:ConnectToAp()
     
     -- Initialize connection in a background thread
     ExecuteAsync(function()
+		print("Self.host: '" .. self.host .. "'\n")
+		print("Self.slot: '" .. self.slot .. "'\n")
+		print("Self.password: '" .. self.password .. "'\n")
         self:Connect(self.host, self.slot, self.password)
     end)
     
     -- Primary polling loop (runs every 250ms)
     LoopAsync(250, function()
         if ap ~= nil then
-            ap:poll()
+            local ok, err = pcall(function()
+                ap:poll()
+            end)
+            if not ok then
+                print("[Archipelago] Error during poll: " .. tostring(err) .. "\n")
+                Utils.WriteCrashLog(err)
+            end
         end
         return true
     end)
