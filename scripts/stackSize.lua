@@ -27,6 +27,7 @@ local counterBlueprints = {
     ["BP_MarkedCounter"] = { path = "/Game/Core/Objects/BP_MarkedCounter.BP_MarkedCounter_C", key = "BP_MarkedCounter", hooks = { main = nil, post = nil} },
     ["BP_MoneyCounterTier2_Euro"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Euro.BP_MoneyCounterTier2_Euro_C", key = "BP_MoneyCounterTier2_Euro", hooks =  { main = nil, post = nil} },
     ["BP_MoneyCounterTier2_Yen"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Yen.BP_MoneyCounterTier2_Yen_C", key = "BP_MoneyCounterTier2_Yen", hooks =  { main = nil, post = nil} },
+    ["BP_MoneyCounterTier2_Pounds"]= { path = "/Game/Core/Objects/BP_MoneyCounterTier2_Pounds.BP_MoneyCounterTier2_Pounds_C", key = "BP_MoneyCounterTier2_Pounds", hooks = { main = nil, post = nil} },
     ["BP_MoneyCounterTier2"] = { path = "/Game/Core/Objects/BP_MoneyCounterTier2.BP_MoneyCounterTier2_C", key = "BP_MoneyCounterTier2", hooks = { main = nil, post = nil} },
 }
 
@@ -104,6 +105,7 @@ function StackSize:changeInOutSettings(upgradeLevel)
                 local config = {
                     BP_MoneyCounter = generateTier1Config(upgradeLevel),
                     BP_MarkedCounter = generateTier1Config(upgradeLevel),
+                    BP_MoneyCounterTier2_Pounds = generateTier2Config(upgradeLevel),
                     BP_MoneyCounterTier2_Euro = generateTier2Config(upgradeLevel),
                     BP_MoneyCounterTier2_Yen = generateTier2Config(upgradeLevel),
                     BP_MoneyCounterTier2 = generateTier2Config(upgradeLevel),
