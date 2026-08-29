@@ -53,6 +53,7 @@ Here is a list of currently implemented rewards:
     - UV lamps
     - Dryer
     - All Money counters
+      - Removed the starting money counter from randomization in order to allow completion of "Shop Till It Drops" 
     - Ladder
     - Workbench tools and consumables
     - Sticker Gun

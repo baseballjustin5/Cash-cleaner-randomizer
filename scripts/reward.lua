@@ -129,13 +129,11 @@ function Reward:GetRewardText(reward)
         if reward == "Market_BP_MoneyGun_C" then
             return "less reputation required for Money Gun"
         elseif reward == "Market_BP_Washer_C" then
-            return "less reputation required for small washer"
+            return "less reputation required for Small Washer"
         elseif reward == "Market_BP_UVLamp_C" then
             return "less reputation required for UV Lamps"
         elseif reward == "Market_BP_Dryer_C" then
             return "less reputation required for Dryers"
-        elseif reward == "Market_BP_MoneyCounter_C" then
-            return "less reputation required for Basic Money Counter"
         elseif reward == "Market_BP_MoneyCounterTier2_C" then
             return "less reputation required for Tier 2 Money Counter"
         elseif reward == "Market_BP_MoneyCounterTier2_Euro_C" then
