@@ -118,6 +118,7 @@ function Archipelago:Connect(server, slot, password)
             end
 
             if #sendingChecks > 0 and ap ~= nil then
+                print("AP: " .. ap .. " and Number of sending checks: " .. #sendingChecks)
                 ap:LocationChecks(sendingChecks)
             end
             self.PendingChecks = {}
@@ -237,6 +238,11 @@ function Archipelago:Connect(server, slot, password)
         function()
             ap = AP(uuid, game_name, server);
     end)
+    if not success then
+        print("Connection Failed with error " .. err)
+    else
+        print("Connection Succesful: " .. tostring(ap))
+    end
 
     print("apcalled")
     if not success or ap == nil then
@@ -318,7 +324,10 @@ function Archipelago:Disconnect()
 end
 
 function Archipelago:SendLocationFromName(locationName)
+    print(locationName)
     local locationID = self:GetAPLocationIDfromName(locationName)
+    print("locationID: " .. locationID)
+    print("AP Status: " .. tostring(ap))
     if ap == nil then
         print("AP client not connected, cannot send location")
         return

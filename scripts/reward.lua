@@ -174,6 +174,7 @@ end
 
 function Reward:Check(location)
     Utils.ThrottledCall(function()
+        print(location)
         self.Archipelago:SendLocationFromName(location)
     end)
 end

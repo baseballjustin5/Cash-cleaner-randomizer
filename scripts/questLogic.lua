@@ -516,9 +516,11 @@ end
 function QuestLogic:OnQuestFinish()
     local pre, post = RegisterHook("/Script/CashCleanerSim.Quest:OnFinished", function(_self, Resolution)
         local questInstance = _self:get()
+        print("Quest finished: " .. questInstance.Info.Name:ToString())
 
         local isSide = true
         Utils.LoopGameplayTagContainer(questInstance.Info.GameplayTags, function(tag, index)
+            print(questInstance.Info.Name:ToString() .. " tag: " .. tag.TagName:ToString())
             if  tag.TagName:ToString() == "Quest.Property.NonDiscardable" then
                 isSide = false
             end
@@ -543,8 +545,12 @@ function QuestLogic:OnQuestFinish()
 
         if not canceled and not isSide then
             local mainQuestName = self:GetMainQuestName(questInstance)
+            print("Completed main quest: " .. mainQuestName)
             if not self.CompletedMainQuestsNames[mainQuestName] then
+                print(self.CompletedMainQuestsNames)
+                print(self.CompletedMainQuestsNames[mainQuestName])
                 self.CompletedMainQuestsNames[mainQuestName] = true
+                print(self.CompletedMainQuestsNames[mainQuestName])
                 self.Reward:Check("MainQuest_" .. mainQuestName)
 
                 if mainQuestName == "Main.FinalAscent" or mainQuestName == "Main.PointOfNoReturn" then
@@ -557,6 +563,8 @@ function QuestLogic:OnQuestFinish()
             if not self.CompletedSideQuestsIds[Utils.GuidToString(questInstance.QuestId)] then
                 self.CompletedSideQuestsIds[Utils.GuidToString(questInstance.QuestId)] = true
                 if self.CompletedSideQuests < self.MaxCompletedSideQuests then
+                    print("Completed Side Quest: " .. questInstance.Info.Name:ToString() .. "\n")
+                    print("Sending Check.\n")
                     self.Reward:Check("SideQuest_" .. self.CompletedSideQuests)
                 end
                 self:SetCompletedSideQuest(self.CompletedSideQuests + 1)
@@ -571,7 +579,7 @@ function QuestLogic:OnQuestFinish()
             end
 
             local ValidationRules = {}
-
+            print("Number of Objectives: " .. #questInstance.Objectives .. "\n")
             for i = 1, #questInstance.Objectives do
                 local objective = questInstance.Objectives[i]
                 local hasMoneyReq = (objective.DesiredMoneyCurrency ~= nil and objective.DesiredMoneyValue ~= nil)

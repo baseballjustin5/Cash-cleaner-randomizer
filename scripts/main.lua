@@ -57,10 +57,14 @@ ExecuteInGameThread(function()
                 else
                     print("WorldInteraction:ListenAllEvents() missing")
                 end
-
-                print(
-                    "[Archipelago] Starting Background Connection to server"
-                )
+                
+                print("Registering Hook for returning to main lobby")
+                RegisterHook("/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C:ReceiveEndPlay", function(Context, EndPlayReason)
+                    print("[Archipelago] Main game mode ended. Returning to main menu or shutting down...")
+                    if Archipelago and type(Archipelago.Disconnect) == "function" then
+                        Archipelago:Disconnect()
+                    end
+                end)
                 Archipelago:ConnectToAp()
         end)
 

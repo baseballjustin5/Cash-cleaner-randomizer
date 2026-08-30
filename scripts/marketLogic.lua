@@ -8,7 +8,7 @@ local Upgrades = {
     ["BP_Washer_C"] = 0,
     ["BP_UVLamp_C"] = 0,
     ["BP_Dryer_C"] = 0,
-    ["BP_MoneyCounter_C"] = 0,
+    ["BP_MoneyCounter_C"] = 3,
     ["BP_MoneyCounterTier2_C"] = 0,
     ["BP_MoneyCounterTier2_Euro_C"] = 0,
     ["BP_MoneyCounterTier2_Yen_C"] = 0,
@@ -109,6 +109,9 @@ function MarketLogic:SetItemReputationReq(Product, ItemKey)
     for k, _v in pairs(UpgradeTargets[ItemKey]) do
         if Utils.compareGuids(MarketDB[k].Guid, Product.ProductId) then
             Product.ReputationRequirement = UpgradesValues[ItemKey][self.Upgrades[ItemKey]]
+            if k == "BP_MoneyCounter_C" then
+                print("[MarketLogic Test] Item " .. k .. " has reputation requirement: " .. Product.ReputationRequirement .. "\n")
+            end
         end
     end
 end
