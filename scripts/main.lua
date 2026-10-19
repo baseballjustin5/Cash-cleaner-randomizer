@@ -11,6 +11,7 @@ local AP = require "lua-apclientpp"
 local mainGameMode = "/Game/Core/Rules/BP_TheMainGameMode.BP_TheMainGameMode_C"
 
 ExecuteInGameThread(function()
+    print(tostring(_VERSION))
 
     LoadAsset(mainGameMode)
     RegisterHook(mainGameMode .. ":ReceiveBeginPlay", function(_self)
