@@ -157,7 +157,7 @@ function QuestLogic:AlterQuestGenerator()
         questGenerator.TrashFillerRange.Max = FillerPercentUpgrades[self.CurrentUpgrades["FillerPercentUpgrades"]].TrashMax
 
         questGenerator.CoinsFillerRange.Min = FillerPercentUpgrades[self.CurrentUpgrades["FillerPercentUpgrades"]].CoinMin
-        questGenerator.CoinsFillerRange.Min = FillerPercentUpgrades[self.CurrentUpgrades["FillerPercentUpgrades"]].CoinMax
+        questGenerator.CoinsFillerRange.Max = FillerPercentUpgrades[self.CurrentUpgrades["FillerPercentUpgrades"]].CoinMax
 
         questGenerator.CurrencyMixExtraMoneyPercent.Min = MixPercentUpgrades[self.CurrentUpgrades["MixPercentUpgrades"]].Min
         questGenerator.CurrencyMixExtraMoneyPercent.Max = MixPercentUpgrades[self.CurrentUpgrades["MixPercentUpgrades"]].Max
@@ -533,6 +533,7 @@ function QuestLogic:OnQuestFinish()
         end)
 
         local canceled = false
+        print(isSide)
         Utils.LoopGameplayTagContainer(Resolution:get(), function(tag, index)
             if tag.TagName:ToString() == "Quest.Resolution.Canceled" or tag.TagName:ToString() == "Quest.Resolution.Failed" then
                 canceled = true
@@ -547,10 +548,11 @@ function QuestLogic:OnQuestFinish()
             local mainQuestName = self:GetMainQuestName(questInstance)
             print("Completed main quest: " .. mainQuestName)
             if not self.CompletedMainQuestsNames[mainQuestName] then
-                print(self.CompletedMainQuestsNames)
-                print(self.CompletedMainQuestsNames[mainQuestName])
+                --print(self.CompletedMainQuestsNames)
+                --print(tostring(self.CompletedMainQuestsNames[mainQuestName]))
                 self.CompletedMainQuestsNames[mainQuestName] = true
-                print(self.CompletedMainQuestsNames[mainQuestName])
+                --print(self.CompletedMainQuestsNames[mainQuestName])
+                print("Looking for reward: MainQuest_" .. mainQuestName)
                 self.Reward:Check("MainQuest_" .. mainQuestName)
 
                 if mainQuestName == "Main.FinalAscent" or mainQuestName == "Main.PointOfNoReturn" then

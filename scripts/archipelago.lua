@@ -266,6 +266,7 @@ function Archipelago:Connect(server, slot, password)
     ap:set_bounced_handler(on_bounced)
     ap:set_retrieved_handler(on_retrieved)
     ap:set_set_reply_handler(on_set_reply)
+    print("[Archipelago] Registered Event Handlers")
 end
 
 function Archipelago:ConnectToAp()
@@ -279,10 +280,11 @@ function Archipelago:ConnectToAp()
     
     -- Initialize connection in a background thread
     ExecuteAsync(function()
-		print("Self.host: '" .. self.host .. "'\n")
-		print("Self.slot: '" .. self.slot .. "'\n")
-		print("Self.password: '" .. self.password .. "'\n")
+		print("Self.host: '" .. self.host .. "'")
+		print("Self.slot: '" .. self.slot .. "'")
+        print("Self.password: [REDACTED]")
         self:Connect(self.host, self.slot, self.password)
+        self:Say(Hello)
     end)
     
     -- Primary polling loop (runs every 250ms)
@@ -324,20 +326,28 @@ function Archipelago:Disconnect()
 end
 
 function Archipelago:SendLocationFromName(locationName)
-    print(locationName)
+    print(locationName .. ": testing")
     local locationID = self:GetAPLocationIDfromName(locationName)
+    if locationID == nil then
+        print("Location name: "..locationName.." is not valid.")
+        return
+    end
     print("locationID: " .. locationID)
+    print("testing")
     print("AP Status: " .. tostring(ap))
     if ap == nil then
         print("AP client not connected, cannot send location")
         return
     end
-     
-    if locationID == nil then
-        print("Location name:"..locationName.."Is not valid.")
-        return
+    local success, err = pcall(function()
+        ap:LocationChecks({tonumber(locationID)})
+    end)
+    
+    if not success then
+        print("ERROR sending location check: " .. tostring(err))
+    else
+        print("Successfully sent location check packet!")
     end
-    ap:LocationChecks({tonumber(locationID)})
 end
 
 function Archipelago:Goal()
@@ -351,7 +361,25 @@ end
 ---@param locationName string
 ---@return integer?
 function Archipelago:GetAPLocationIDfromName(locationName)
-    return ArchipelagoLists.LocationNameToAPId[locationName]
+    if not locationName then
+        return nil
+    end
+
+    if ArchipelagoLists.LocationNameToAPId[locationName] then
+        return ArchipelagoLists.LocationNameToAPId[locationName]
+    end
+
+    local mainquest = locationName:match("^MainQuest_(.+)$")
+    if mainquest then
+        mainquest = "Main Quest " .. mainquest:gsub("%.", ": ")
+        mainquest = mainquest:gsub("(%l)(%u)", "%1 %2")
+        locationName = mainquest
+        print("Location after edit: " .. locationName)
+            if ArchipelagoLists.LocationNameToAPId[locationName] then
+                return ArchipelagoLists.LocationNameToAPId[locationName]
+            end
+    end
+    return nil
 end
 
 return Archipelago
